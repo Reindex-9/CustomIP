@@ -1,6 +1,7 @@
 # 介绍
-网络搬运后修改留档
-原地址：https://github.com/Fndroid/clash_for_windows_pkg/issues/2729
+网络搬运后修改留档  
+配置raw链：https://raw.githubusercontent.com/Reindex-9/Clash-Custom/main/%E9%85%8D%E7%BD%AE.ini  
+原地址：https://github.com/Fndroid/clash_for_windows_pkg/issues/2729  
 # 使用方法
 1. “ACL4SSR在线订阅转换”
 2. 点击“进阶模式”
