@@ -12,42 +12,68 @@ parsers: # array
   # 建立自己的配置
     yaml:
       prepend-proxy-groups: # 建立策略组
-        - name: 🔯 代理模式 
+        - name: ✔️ 选择节点 
+          type: select
+        
+        # 地区分类
+        - name: 🚩PROXY 
           type: select
           proxies:
-            - 绕过大陆丨黑名单(GFWlist) # 黑名单模式，意为「只有命中规则的网络流量，才使用代理」
+            - ✔️ 选择节点
+            - 🌐北美
+            - 🌐欧洲
+            - 🌐港澳台 
+            - 🌐日韩新 
+            - 🌐大洋洲 
+            - 🌐冷门国家
+
+        - name: 🌐北美
+          type: select
+
+        - name: 🌐欧洲 
+          type: select
+        
+        - name: 🌐港澳台
+          type: select
+        
+        - name: 🌐日韩新
+          type: select
+          
+        - name: 🌐大洋洲 
+          type: select
+
+        - name: 🌐冷门国家 
+          type: select
+
+        ##########################################################
+        
+        - name: 🔘 代理模式 
+          type: select
+          proxies:
             - 绕过大陆丨白名单(Whitelist) # 白名单模式，意为「没有命中规则的网络流量，统统使用代理」
-            
-        - name: 🔰 选择节点 
-          type: select
-            
-        - name: 🛑 广告拦截
+            - 绕过大陆丨黑名单(GFWlist) # 黑名单模式，意为「只有命中规则的网络流量，才使用代理」
+
+        - name: 🚫 广告拦截
           type: select
           proxies:
-            - DIRECT
             - REJECT
-            - PROXY
-            
-        - name: 绕过大陆丨黑名单(GFWlist)
-          type: url-test
-          url: http://www.gstatic.com/generate_204
-          interval: 86400
-          proxies:
             - DIRECT
-            
+
         - name: 绕过大陆丨白名单(Whitelist)
           type: url-test
-          url: http://www.gstatic.com/generate_204
+          url: http://www.google.com/generate_204
           interval: 86400
           proxies:
-            - PROXY
-            
-        - name: PROXY
+            - 🚩PROXY
+
+        - name: 绕过大陆丨黑名单(GFWlist)
           type: url-test
-          url: http://www.gstatic.com/generate_204
+          url: http://www.google.com/generate_204
           interval: 86400
           proxies:
-            - 🔰 选择节点
+            - DIRECT
+            
+
             
   # 策略组示例
        # - name: 分组名
@@ -55,22 +81,44 @@ parsers: # array
                # url-test     # 自动选择延迟最低的节点
                # fallback     # 节点故障时自动切换下一个
                # laod-balance # 均衡使用分组内的节点
-         # url: http://www.gstatic.com/generate_204 # 测试地址 非select类型分组必要
+         # url: http://www.google.com/generate_204 # 测试地址 非select类型分组必要
          # interval: 300 # 自动测试间隔时间，单位秒 非select类型分组必要
          # tolerance: 50 # 允许的偏差，节点之间延迟差小于该值不切换 非必要
          # proxies:  
            # - 节点名称或其他分组套娃
           
       commands:
-        - proxy-groups.🔰 选择节点.proxies=[]proxyNames # 向指定策略组添加订阅中的节点名，可使用正则过滤
-        - proxy-groups.🔰 选择节点.proxies.0+DIRECT # 向指定分组第一个位置添加一个 DIRECT 节点名
-        
+        - proxy-groups.✔️ 选择节点.proxies=[]proxyNames # 向指定策略组添加订阅中的节点名，可使用正则过滤
+        - proxy-groups.✔️ 选择节点.proxies.0+DIRECT # 向指定分组第一个位置添加一个 DIRECT 节点名
+
+        - proxy-groups.全部节点.proxies=[]proxyNames
+        - proxy-groups.🌐北美.proxies=[]proxyNames|美国|US|加拿大
+        - proxy-groups.🌐欧洲.proxies=[]proxyNames|英国|UK|法国|德国|意大利|俄罗斯 # 向指定策略组添加订阅中的节点名，可使用正则过滤
+        - proxy-groups.🌐港澳台.proxies=[]proxyNames|香港|澳门|台湾|京港
+        - proxy-groups.🌐日韩新.proxies=[]proxyNames|日本|京日|韩国|新加坡|狮城
+        - proxy-groups.🌐大洋洲.proxies=[]proxyNames|新西兰|澳大利亚
+        - proxy-groups.🌐冷门国家.proxies=[]proxyNames|^((?!美国|US|加拿大|英国|UK|法国|德国|意大利|俄罗斯|香港|京港|澳门|台湾|日本|京日|韩国|新加坡|狮城|新西兰|澳大利亚).)*$
+
+       # - proxy-groups.其他.proxies=[]proxyNames|^[^日台新韩美]*$ # 这个可以自定义，这个正则的意思是排除节点名字有“香日台新韩美”的节点。
+
+       # 为各个策略组添加一个DIRECT，避免机场节点无法匹配上面的正则筛选而导致配置出错。
+
+        - proxy-groups.全部节点.proxies.0+DIRECT
+        - proxy-groups.🌐北美.proxies.0+DIRECT
+        - proxy-groups.🌐欧洲.proxies.0+DIRECT
+        - proxy-groups.🌐港澳台.proxies.0+DIRECT
+        - proxy-groups.🌐日韩新.proxies.0+DIRECT
+        - proxy-groups.🌐大洋洲.proxies.0+DIRECT
+        - proxy-groups.🌐冷门国家.proxies.0+DIRECT
+
+        # - proxy-groups.节点名字.proxies.0+DIRECT # 向指定分组第一个位置添加一个 DIRECT 节点名
         # 一些可能用到的正则过滤节点示例，使分组更细致
         # []proxyNames|a                         # 包含a
         # []proxyNames|^(.*)(a|b)+(.*)$          # 包含a或b
         # []proxyNames|^(?=.*a)(?=.*b).*$        # 包含a和b
         # []proxyNames|^((?!b).)*a((?!b).)*$     # 包含a且不包含b
         # []proxyNames|^((?!b|c).)*a((?!b|c).)*$ # 包含a且不包含b或c
+        # 更多正则教程，请看这里：https://deerchao.cn/tutorials/regex/regex.htm#top
         
   # 添加规则
       prepend-rules: # 规则由上往下遍历，如上面规则已经命中，则不再往下处理
@@ -78,24 +126,28 @@ parsers: # array
         - DOMAIN,clash.razord.top,DIRECT
         - DOMAIN,yacd.haishan.me,DIRECT
         - RULE-SET,private,DIRECT
-        - RULE-SET,reject,🛑 广告拦截
-        - RULE-SET,icloud,DIRECT #
-        - RULE-SET,apple,PROXY # 这三个为国内可直连地址，如果希望走代理改为PROXY
-        - RULE-SET,google,PROXY # 
-        - RULE-SET,bing,PROXY
-        - RULE-SET,openai,PROXY
-        - RULE-SET,tld-not-cn,PROXY
-        - RULE-SET,gfw,PROXY
-        - RULE-SET,greatfire,PROXY
-        - RULE-SET,telegramcidr,PROXY
+        - RULE-SET,reject,🚫 广告拦截
+        - RULE-SET,icloud,DIRECT 
+        - RULE-SET,apple,🚩PROXY 
+        - RULE-SET,google,🚩PROXY 
+        - RULE-SET,bing,🚩PROXY
+        - RULE-SET,openai,🚩PROXY
+        - RULE-SET,tld-not-cn,🚩PROXY
+        - RULE-SET,gfw,🚩PROXY
+        - RULE-SET,greatfire,🚩PROXY
+        - RULE-SET,telegramcidr,🚩PROXY
         - RULE-SET,lancidr,DIRECT
         - RULE-SET,cncidr,DIRECT
         - GEOIP,,DIRECT
         - GEOIP,CN,DIRECT
         - RULE-SET,direct,DIRECT
-        - RULE-SET,proxy,🔯 代理模式
-        - MATCH,🔯 代理模式 # 规则之外的
+        - RULE-SET,proxy,🔘 代理模式
+        - MATCH,🔘 代理模式 # 规则之外的
+
   # 添加规则集
+      # ruleset 指的是配置中包含的分流规则，
+      # custom_proxy_group 指的是最终在Clash中呈现的分流策略组及其排序。
+      # ruleset 排序原则：重要直连分流规则 > 去广告规则 > 个人国内规则 > 个人国外规则 > 小分流 > 国内外大分流 > 补充规则。
       mix-rule-providers: 
         reject: # 广告域名列表
           type: http
