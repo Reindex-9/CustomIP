@@ -21,7 +21,7 @@ Unbreak.list（ConnersHua）
 **3. 拦截Reject**（去广告，反劫持）  
 BanAD.list ( acl4ssr 10分推荐)；BanProgramAD.list ( acl4ssr 10分推荐)；BanEasyListChina.list ( acl4ssr 5分推荐)；Reject.list (lhie1)  
 **4. 特殊直连域名**（根据需求添加）  
-GoogleCN.list （能直连的谷歌域名）；AsianTV.list (lhie1)；Special.list (lhie1,喜欢用BT下载的推荐)；Netease Music.list (lhie1，用网易云会员破解的加上)；
+GoogleCN.list （能直连的谷歌域名）；AsianTV.list (lhie1)；Special.list (lhie1,喜欢用BT下载的推荐)；Netease Music.list (lhie1，用网易云会员破解的加上)  
 **5. 特殊代理域名**（根据需求添加）  
 Netflix.list ( acl4ssr )；OneDrive.list ( acl4ssr )；GlobalTV.list (lhie1)；AppleNews.list（ConnersHua）；HKMTMedia.list（ConnersHua）  
 **6. 可直连也可代理**（根据需求添加）  
