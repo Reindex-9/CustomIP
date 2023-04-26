@@ -14,7 +14,14 @@ parsers: # array
       prepend-proxy-groups: # 建立策略组
         - name: ✔️ PROXY #选择节点
           type: select
-        
+          proxies:
+            - 📶 Auto
+
+        - name: 📶 Auto #测速自动选择     
+          type: url-test
+          url: http://www.google.com/generate_204
+          interval: 86400
+
         # 地区分类
         - name: 🚩 CustomIP #选择地区（根据地区分类节点）
           type: select
@@ -26,7 +33,6 @@ parsers: # array
             - 🌐 大洋洲 
             - 🌐 冷门国家
             - ✔️ PROXY
-
 
         - name: 🌐 北美
           type: select
@@ -102,6 +108,10 @@ parsers: # array
       commands:
         - proxy-groups.✔️ PROXY.proxies=[]proxyNames # 向指定策略组添加订阅中的节点名，可使用正则过滤
         - proxy-groups.✔️ PROXY.proxies.0+DIRECT # 向指定分组第一个位置添加一个 DIRECT 节点名
+        
+        - proxy-groups.📶 Auto.proxies=[]proxyNames
+        - proxy-groups.✔️ PROXY.proxies.0+📶 Auto
+
 
         - proxy-groups.🌐 北美.proxies=[]proxyNames|美国|美國|United States|US|us|加拿大|Canada
         - proxy-groups.🌐 欧洲.proxies=[]proxyNames|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利 # 向指定策略组添加订阅中的节点名，可使用正则过滤
