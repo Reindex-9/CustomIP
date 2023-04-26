@@ -21,7 +21,8 @@ raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSR_rules
 。  
 
 # 常见问题  
-若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或ACL4SSR订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存即可。  
+1. 若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或ACL4SSR订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存即可。  
+2. 订阅链接转换后保存失败提示EOF，可能是后端的问题，切换一个。
 
 # 规则集排序自定义  
 **1. 局域网地址**（必须有，一般直连）  
