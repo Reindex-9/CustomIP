@@ -14,7 +14,7 @@ emoji大全：https://emojixd.com/
 原地址2：https://github.com/Fndroid/clash_for_windows_pkg/issues/2729  
   
 # Clash——订阅链接转换  
-raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/Clash_ACL4SSR_rules.ini
+raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/Clash_ACL4SSR_rules.ini  
 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
 在线转换地址：https://acl4ssr-sub.github.io/  
   
