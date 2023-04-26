@@ -1,12 +1,9 @@
 网络搬运后修改留档  
-# QuantumultX  
-
 # Clash——paser处理  
 #### 策略组
 选择节点，PROXY，代理模式，广告拦截；地区分类（北美，欧洲，港澳台，日韩新，大洋洲，冷门国家）
-#### 新增规则  
-新增规则集：Bing，OpenAI  
-新增规则集地址：https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Clash  
+#### 常见问题  
+若用paser更新配置后出现“context deadline exceeded”错误，提示无法切换配置，关闭代理模式再重新更新即可。
 #### 参考  
 emoji大全：https://emojixd.com/  
 原地址1：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
