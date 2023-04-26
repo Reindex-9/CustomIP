@@ -127,7 +127,7 @@ parsers: # array
           
       commands:
         - proxy-groups.✔️ PROXY.proxies=[]proxyNames # 向指定策略组添加订阅中的节点名，可使用正则过滤       
-        - proxy-groups.📶 Auto.proxies=[]proxyNames|^((?!(music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|云音乐|Music|Netease|🎶|手游|游戏|game)).)*$
+        - proxy-groups.📶 Auto.proxies=[]proxyNames|^((?!music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|云音乐|Music|Netease|🎶|手游|游戏|game).)*$
         - proxy-groups.✔️ PROXY.proxies.0+📶 Auto # 向指定分组第一个位置添加一个 📶 Auto 节点名
 
         - proxy-groups.🌐 北美.proxies=[]proxyNames|美国|美國|United States|US|us|加拿大|Canada
