@@ -14,17 +14,17 @@ emoji大全：https://emojixd.com/
 
 # 规则集排序自定义  
 
-1. 局域网地址（必须有，一般直连）  
+**1. 局域网地址**（必须有，一般直连）  
 LocalAreaNetwork.list  
 2. 修正Unbreak（主要防止跟后续拦截冲突，提前放行）  
 Unbreak.list（ConnersHua）  
-3. 去广告（可选，看自身使用情况）  
+3. 拦截Reject（去广告，反劫持）  
 BanAD.list ( acl4ssr 10分推荐)；BanProgramAD.list ( acl4ssr 10分推荐)；BanEasyListChina.list ( acl4ssr 5分推荐)；Reject.list (lhie1)  
-4. 特殊直连域名（可选，看自身使用情况）  
+4. 特殊直连域名（根据需求添加）  
 GoogleCN.list （能直连的谷歌域名）；AsianTV.list (lhie1)；Special.list (lhie1,喜欢用BT下载的推荐)；Netease Music.list (lhie1，用网易云会员破解的加上)；
-5. 特殊代理域名（可选，看自身使用情况）  
+5. 特殊代理域名（根据需求添加）  
 Netflix.list ( acl4ssr )；OneDrive.list ( acl4ssr )；GlobalTV.list (lhie1)；AppleNews.list（ConnersHua）；HKMTMedia.list（ConnersHua）  
-6. 可直连也可代理的（可选，看自身使用情况）  
+6. 可直连也可代理的（根据需求添加）  
 Microsoft，Apple  
 7. 一般代理域名（一般要加）  
 ProxyLite.list( acl4ssr 10分推荐)；ProxyGFWlist.list( acl4ssr 7分推荐)  
