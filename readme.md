@@ -7,20 +7,22 @@ emoji大全：https://emojixd.com/
 **CustomIP**（根据地区切换节点）；**Auto**（自动测速）；**OutSide**（国外网站默认）；**Option**（自选模式）；**PROXY**（选择节点）；**Reject**（广告拦截；反劫持）；**Final**（黑白名单模式：未命中规则默认直连/代理）。  
 - **地区分类**  
 北美，欧洲，港澳台，日韩新，大洋洲，冷门国家  
-### 常见问题  
-若用paser更新配置后出现“context deadline exceeded”错误，提示无法切换配置，关闭代理模式再重新更新即可。
+
 ### 参考  
 原地址1：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
 原地址2：https://github.com/Fndroid/clash_for_windows_pkg/issues/2729  
   
-# Clash——订阅链接转换  
-raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/Clash_ACL4SSR_rules.ini  
+# ACL4SSR——订阅链接转换  
+raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
 在线转换地址：https://acl4ssr-sub.github.io/  
   
 原地址：https://github.com/Wzieee/custom-network-rules  
 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接（机场、自建的），远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可
 。  
+  
+# 常见问题  
+若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或ACL4SSR订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存即可。  
 
 # 规则集排序自定义  
 **1. 局域网地址**（必须有，一般直连）  
