@@ -1,312 +1,60 @@
-parsers: # array
-  # - reg: ^.*$ 匹配所有订阅，或  - url: https://example.com/profile.yaml 指定订阅
-  - reg: ^.*$
-  # 删除服务商提供的策略组和规则
-    code: |
-      module.exports.parse = (raw, { yaml }) => {
-        const rawObj = yaml.parse(raw)
-        const groups = []
-        const rules = []
-        return yaml.stringify({ ...rawObj, 'proxy-groups': groups, rules })
-      } 
-  # 建立自己的配置
-    yaml:
-      prepend-proxy-groups: # 建立策略组
+[custom]
+;不要随意改变关键字，否则会导致出错
+;acl4SSR规则
+;自定义时注意不要有多余空格
 
-        - name: 📶 Auto #测速自动选择     
-          type: url-test
-          url: http://www.google.com/generate_204
-          interval: 86400
+;去广告
+;自动测速
+;自选模式：微软、苹果
+;添加：openai，bing
+;增强中国IP段
+;增强国外GFW
 
-        - name: 🚩 CustomIP #选择地区（根据地区分类节点）
-          type: select
-          proxies:
-            - 📶 Auto
-            - 🌐 北美
-            - 🌐 欧洲
-            - 🌐 港澳台 
-            - 🌐 日韩新 
-            - 🌐 大洋洲 
-            - 🌐 冷门国家
-            - ✔️ PROXY
+# 设置规则集及规则集所用策略
+# 规则集排序：本地局域网 -> 修正Unbreak -> 拦截Reject（广告/劫持） -> 特殊直连 -> 特殊代理 -> 一般直连域名 -> 一般代理域名 -> IP段或者GEO -> 兜底Final
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list # 局域网地址
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list 
+ruleset=🚫 Reject,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list # 广告拦截
+ruleset=🚫 Reject,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list # 应用内广告拦截
 
-        - name: ✈️ OutSide #国外网站默认
-          type: select
-          proxies:
-            - 📶 Auto
-            - 🌐 北美
-            - 🌐 欧洲
-            - 🌐 港澳台 
-            - 🌐 日韩新 
-            - 🌐 大洋洲 
-            - 🌐 冷门国家
-            - ✔️ PROXY
-            - 🚩 CustomIP
-            
-        ##########################################################
-        - name: 🌐 北美
-          type: select
+ruleset=🚩 CustomIP,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.list # OpenAI
+ruleset=🚩 CustomIP,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Bing/Bing.list # Bing
 
-        - name: 🌐 欧洲 
-          type: select
-        
-        - name: 🌐 港澳台
-          type: select
-        
-        - name: 🌐 日韩新
-          type: select
-          
-        - name: 🌐 大洋洲 
-          type: select
+ruleset=🔘 Option,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Microsoft.list
+ruleset=🔘 Option,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Apple.list
+ruleset=🌐 港澳台,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/BilibiliHMT.list #bilibili港澳台
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Bilibili.list # bilibili
+ruleset=✈️ OutSide,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list # 国外流媒体
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list # 国内流媒体
+ruleset=✈️ OutSide,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list # GFW的全量列表
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list # 国内常见域名、直连CDN等
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list # 国内BAT公司及云服务厂商的IP段
+ruleset=🎯 Direct,https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Download.list # 一些下载用的域名
+ruleset=🎯 Direct,[]GEOIP,LAN
+ruleset=🎯 Direct,[]GEOIP,CN
+ruleset=♾️ Final,[]FINAL
 
-        - name: 🌐 冷门国家 
-          type: select
+# 设置策略组并为策略组添加节点
+# 策略组和规则集名称（关键字）后需要添加`
+custom_proxy_group=📶 Auto`url-test`(^((?!(music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|云音乐|Music|Netease|🎶|手游|游戏|game)).)*$)`http://www.gstatic.com/generate_204`300,,50
+custom_proxy_group=🚩 CustomIP`select`[]📶 Auto`[]🌐 北美`[]🌐 欧洲`[]🌐 港澳台`[]🌐 日韩新`[]🌐 大洋洲`[]🌐 冷门国家`[]✔️ PROXY
+custom_proxy_group=✈️ OutSide`select`[]📶 Auto`[]🌐 北美`[]🌐 欧洲`[]🌐 港澳台`[]🌐 日韩新`[]🌐 大洋洲`[]🌐 冷门国家`[]✔️ PROXY`[]🚩 CustomIP
+custom_proxy_group=🌐 北美`select`(美国|美國|US|United States|us|加拿大|Canada)`[]DIRECT
+custom_proxy_group=🌐 欧洲`select`(德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利)`[]DIRECT
+custom_proxy_group=🌐 港澳台`select`(香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan)`[]DIRECT
+custom_proxy_group=🌐 日韩新`select`(日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore)`[]DIRECT
+custom_proxy_group=🌐 大洋洲`select`(新西兰|澳大利亚|澳大利亞|Australia)`[]DIRECT
+custom_proxy_group=🌐 冷门国家`select`(^((?!美国|美國|United States|US|us|加拿大|Canada|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|京港|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore|新西兰|澳大利亚|澳大利亞|Australia).)*$)`[]DIRECT
+custom_proxy_group=🔘 Option`select`[]DIRECT`[]📶 Auto`[]✔️ PROXY`[]🚩 CustomIP`[]🌐 北美`[]🌐 欧洲`[]🌐 港澳台`[]🌐 日韩新`[]🌐 大洋洲`[]🌐 冷门国家
+custom_proxy_group=✔️ PROXY`select`[]📶 Auto`.*
+custom_proxy_group=🎯 Direct`select`[]DIRECT`[]📶 Auto`[]✔️ PROXY`[]🚩 CustomIP
+custom_proxy_group=🚫 Reject`select`[]REJECT`[]DIRECT
+custom_proxy_group=♾️ Final`select`[]DIRECT`[]📶 Auto`[]✔️ PROXY`[]🚩 CustomIP`[]🌐 北美`[]🌐 欧洲`[]🌐 港澳台`[]🌐 日韩新`[]🌐 大洋洲`[]🌐 冷门国家
+;测速正则后加 http://www.gstatic.com/generate_204`300,,50
 
-        ##########################################################
-        - name: 🔘 Option #自选模式
-          type: select
-          proxies:
-            - DIRECT
-            - 📶 Auto
-            - ✔️ PROXY
-            - 🚩 CustomIP 
-            - 🌐 北美
-            - 🌐 欧洲
-            - 🌐 港澳台 
-            - 🌐 日韩新 
-            - 🌐 大洋洲 
-            - 🌐 冷门国家    
+enable_rule_generator=true
+overwrite_original_rules=true
 
-        - name: ✔️ PROXY #选择节点
-          type: select
-          proxies:
-            - 📶 Auto
+;clash_rule_base=https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/GeneralClashConfig.yml
 
-        - name: 🎯 Direct
-          type: select
-          proxies:
-            - DIRECT
-            - 📶 Auto
-            - ✔️ PROXY
-            - 🚩 CustomIP 
-
-        - name: 🚫 Reject
-          type: select
-          proxies:
-            - REJECT
-            - DIRECT
-
-        ##########################################################
-        - name: ♾️ Final #终极策略/黑白名单模式
-          type: select
-          proxies:
-            - DIRECT # 黑名单模式，意为「只有命中规则的网络流量，才使用代理」
-            - 📶 Auto # 以下皆为白名单模式，未命中规则的也使用代理
-            - ✔️ PROXY
-            - 🚩 CustomIP 
-            - 🌐 北美
-            - 🌐 欧洲
-            - 🌐 港澳台 
-            - 🌐 日韩新 
-            - 🌐 大洋洲 
-            - 🌐 冷门国家        
-            
-
-            
-  # 策略组示例
-       # - name: 分组名
-         # type: select       # 手动选点   
-               # url-test     # 自动选择延迟最低的节点
-               # fallback     # 节点故障时自动切换下一个
-               # laod-balance # 均衡使用分组内的节点
-         # url: http://www.google.com/generate_204 # 测试地址 非select类型分组必要
-         # interval: 300 # 自动测试间隔时间，单位秒 非select类型分组必要
-         # tolerance: 50 # 允许的偏差，节点之间延迟差小于该值不切换 非必要
-         # proxies:  
-           # - 节点名称或其他分组套娃
-          
-      commands:
-        - proxy-groups.✔️ PROXY.proxies=[]proxyNames # 向指定策略组添加订阅中的节点名，可使用正则过滤       
-        - proxy-groups.📶 Auto.proxies=[]proxyNames
-
-        - proxy-groups.✔️ PROXY.proxies.0+📶 Auto # 向指定分组第一个位置添加一个 📶 Auto 节点名
-
-        - proxy-groups.🌐 北美.proxies=[]proxyNames|美国|美國|United States|US|us|加拿大|Canada
-        - proxy-groups.🌐 欧洲.proxies=[]proxyNames|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利 # 向指定策略组添加订阅中的节点名，可使用正则过滤
-        - proxy-groups.🌐 港澳台.proxies=[]proxyNames|香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan
-        - proxy-groups.🌐 日韩新.proxies=[]proxyNames|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore
-        - proxy-groups.🌐 大洋洲.proxies=[]proxyNames|新西兰|澳大利亚|澳大利亞|Australia
-        - proxy-groups.🌐 冷门国家.proxies=[]proxyNames|^((?!美国|美國|United States|US|us|加拿大|Canada|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|京港|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore|新西兰|澳大利亚|澳大利亞|Australia).)*$
-
-       # - proxy-groups.其他.proxies=[]proxyNames|^[^日台新韩美]*$ # 这个可以自定义，这个正则的意思是排除节点名字有“香日台新韩美”的节点。
-
-       # 为各个策略组添加一个DIRECT，避免机场节点无法匹配上面的正则筛选而导致配置出错。
-        - proxy-groups.🌐 北美.proxies.0+DIRECT
-        - proxy-groups.🌐 欧洲.proxies.0+DIRECT
-        - proxy-groups.🌐 港澳台.proxies.0+DIRECT
-        - proxy-groups.🌐 日韩新.proxies.0+DIRECT
-        - proxy-groups.🌐 大洋洲.proxies.0+DIRECT
-        - proxy-groups.🌐 冷门国家.proxies.0+DIRECT
-
-        # - proxy-groups.节点名字.proxies.0+DIRECT # 向指定分组第一个位置添加一个 DIRECT 节点名
-        # 一些可能用到的正则过滤节点示例，使分组更细致
-        # []proxyNames|a                         # 包含a
-        # []proxyNames|^(.*)(a|b)+(.*)$          # 包含a或b
-        # []proxyNames|^(?=.*a)(?=.*b).*$        # 包含a和b
-        # []proxyNames|^((?!b).)*a((?!b).)*$     # 包含a且不包含b
-        # []proxyNames|^((?!b|c).)*a((?!b|c).)*$ # 包含a且不包含b或c
-        # 更多正则教程，请看这里：https://deerchao.cn/tutorials/regex/regex.htm#top
-        
-
-
-  # 添加规则
-  # 规则集排序：本地局域网 -> 修正Unbreak -> 拦截Reject（广告/劫持） -> 特殊直连 -> 特殊代理 -> 一般直连域名 -> 一般代理域名 -> IP段或者GEO -> 兜底Final
-
-      prepend-rules: # 规则由上往下遍历，如上面规则已经命中，则不再往下处理
-        - RULE-SET,Lan,DIRECT
-        - RULE-SET,applications,DIRECT 
-        - DOMAIN,clash.razord.top,DIRECT
-        - DOMAIN,yacd.haishan.me,DIRECT
-
-        - RULE-SET,Privacy,🚫 Reject
-        - RULE-SET,Advertising,🚫 Reject
-        - RULE-SET,Hijacking,🚫 Reject
-        
-        - RULE-SET,Apple,♾️ Final #若想icloud和apple使用不同的策略，将icloud规则集顺序放在apple上一位即可
-        - RULE-SET,Google,🚩 CustomIP 
-        - RULE-SET,Bing,🚩 CustomIP
-        - RULE-SET,Microsoft,♾️ Final
-        - RULE-SET,OpenAI,🚩 CustomIP
-
-        - RULE-SET,tld-not-cn,✈️ OutSide
-        - RULE-SET,gfw,✈️ OutSide
-        - RULE-SET,greatfire,✈️ OutSide
-
-        - RULE-SET,China,🎯 Direct
-        - GEOIP,,🎯 Direct
-        - GEOIP,CN,🎯 Direct
-        - RULE-SET,Direct,🎯 Direct
-
-        - RULE-SET,Proxy,✈️ OutSide
-        - MATCH,♾️ Final # 规则之外的
-
-  # 添加规则集
-      # ruleset 指的是配置中包含的分流规则，
-      # custom_proxy_group 指的是最终在Clash中呈现的分流策略组及其排序。
-
-      mix-rule-providers: 
-        Lan: # 本地局域网 IP 
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.yaml"
-          path: ./ruleset/Lan.yaml
-          interval: 86400
-          
-        applications: # 需要直连的常见软件列表
-          type: http
-          behavior: classical
-          url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/applications.txt"
-          path: ./ruleset/applications.yaml
-          interval: 86400
-
-        Advertising: # 广告域名列表 - 去广告精简版(可能存在部分误拦截，建议搭配放行规则进行修正。)
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite_Classical.yaml"
-          path: ./ruleset/AdvertisingLite_Classical.yaml
-          interval: 86400
-
-        Hijacking: # 反劫持
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.yaml"
-          path: ./ruleset/Hijacking.yaml
-          interval: 86400
-          
-        Apple: # Apple 域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple_Classical.yaml"
-          path: ./ruleset/Apple_Classical.yaml
-          interval: 86400
-          
-        Google: # Google 域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml"
-          path: ./ruleset/Google.yaml
-          interval: 86400
-          
-        Bing: # Bing 域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Bing/Bing.yaml"
-          path: ./ruleset/Bing.yaml
-          interval: 86400
-
-        Microsoft: # Microsoft 域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml"
-          path: ./ruleset/Microsoft.yaml
-          interval: 86400        
-
-        
-        OpenAI: # OpenAI 域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.yaml"
-          path: ./ruleset/OpenAI.yaml
-          interval: 86400
-        
-        Proxy: # 代理域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy_Classical.yaml"
-          path: ./ruleset/Proxy_Classical.yaml
-          interval: 86400
-          
-        Direct: # 直连域名列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Direct/Direct.yaml"
-          path: ./ruleset/Direct.yaml
-          interval: 86400
-          
-        Privacy: # 隐私保护
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy_Classical.yaml"
-          path: ./ruleset/Privacy_Classical.yaml
-          interval: 86400
-          
-        gfw: # GFWList 域名列表
-          type: http
-          behavior: domain
-          url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt"
-          path: ./ruleset/gfw.yaml
-          interval: 86400
-          
-        greatfire: # GreatFire 域名列表
-          type: http
-          behavior: domain
-          url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/greatfire.txt"
-          path: ./ruleset/greatfire.yaml
-          interval: 86400
-          
-        tld-not-cn: # 非中国大陆使用的顶级域名列表
-          type: http
-          behavior: domain
-          url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt"
-          path: ./ruleset/tld-not-cn.yaml
-          interval: 86400
-          
-          
-        China: # 中国大陆 IP 地址列表
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/China/China_Classical.yaml"
-          path: ./ruleset/China_Classical.yaml
-          interval: 86400
-          
-
+;luck
