@@ -43,7 +43,7 @@ parsers: # array
             - ✔️ PROXY
             - 🚩 CustomIP
             
-        - name: 🔘 Option #终极策略/黑白名单模式/自选模式
+        - name: 🔘 Option #自选模式
           type: select
           proxies:
             - DIRECT
