@@ -1,11 +1,13 @@
 网络搬运后修改留档  
 # Clash——paser处理  
-#### 策略组
+### 策略组
+#### 模式
 **PROXY**（选择节点）；**CustomIP**（根据地区切换节点）；**Auto**（自动测速）；**Final**（黑白名单模式；切换直连/代理）；**Reject**（广告拦截；反劫持）  
-地区分类：北美，欧洲，港澳台，日韩新，大洋洲，冷门国家  
-#### 常见问题  
+#### 地区分类
+北美，欧洲，港澳台，日韩新，大洋洲，冷门国家  
+### 常见问题  
 若用paser更新配置后出现“context deadline exceeded”错误，提示无法切换配置，关闭代理模式再重新更新即可。
-#### 参考  
+### 参考  
 emoji大全：https://emojixd.com/  
 原地址1：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
 原地址2：https://github.com/Fndroid/clash_for_windows_pkg/issues/2729  
