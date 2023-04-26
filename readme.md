@@ -16,7 +16,7 @@ emoji大全：https://emojixd.com/
 
 1. 局域网地址（必须有，一般直连）  
 LocalAreaNetwork.list  
-2. Unbreak（主要防止跟后续拦截冲突，提前放行）  
+2. 修正Unbreak（主要防止跟后续拦截冲突，提前放行）  
 Unbreak.list（ConnersHua）  
 3. 去广告（可选，看自身使用情况）  
 BanAD.list ( acl4ssr 10分推荐)；BanProgramAD.list ( acl4ssr 10分推荐)；BanEasyListChina.list ( acl4ssr 5分推荐)；Reject.list (lhie1)  
