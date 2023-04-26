@@ -9,9 +9,11 @@ emoji大全：https://emojixd.com/
 原地址1：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
 原地址2：https://github.com/Fndroid/clash_for_windows_pkg/issues/2729  
 
-# Clash——订阅链接处理  
-raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/clash_custom-rules.ini
+# Clash——订阅链接转换  
+raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/Clash_custom-rules.ini  
+参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
 原地址：https://github.com/Wzieee/custom-network-rules  
+在线转换地址：https://acl4ssr-sub.github.io/  
 #### 使用方法
 1. “ACL4SSR在线订阅转换”
 2. 点击“进阶模式”
