@@ -14,8 +14,8 @@ emoji大全：https://emojixd.com/
 # ACL4SSR——订阅链接转换  
 raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
-在线转换地址1：[つつの订阅转换](https://m.sub.tsutsu.one/)  
-在线转换地址2：[ACL4SSR订阅转换](https://acl4ssr-sub.github.io/)  
+つつの订阅转换：https://m.sub.tsutsu.one/  
+ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
   
 原地址：https://github.com/Wzieee/custom-network-rules  
 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接（机场、自建的），远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可
