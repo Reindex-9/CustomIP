@@ -102,6 +102,7 @@ parsers: # array
           proxies:
             - DIRECT # 黑名单模式，意为「只有命中规则的网络流量，才使用代理」
             - 📶 Auto # 以下皆为白名单模式，未命中规则的也使用代理
+            - ✈️ OutSide
             - ✔️ PROXY
             - 🚩 CustomIP 
             - 🌐 北美
