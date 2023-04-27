@@ -22,7 +22,7 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 。  
 
 # 常见问题  
-1. 若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或ACL4SSR订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存即可。  
+1. 若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存即可。  
 2. 订阅链接转换后保存失败提示EOF，可能是后端的问题，切换一个。
 3. 若clash运行出现错误io：read/write on closed pipe，代表时间设定有问题，vmess协议对时间要求比较严格，清理缓存或删除订阅链接重新下载即可。
 
@@ -45,7 +45,7 @@ ProxyLite.list( acl4ssr 10分推荐)；ProxyGFWlist.list( acl4ssr 7分推荐)
 ChinaDomain.list ( acl4ssr 10分推荐)；ChinaCompanyIp.list ( acl4ssr 10分推荐)  
 **9. GEO IP定位**  
 GEOIP,CN 直连（10分推荐）  
-**10. 兜底策略**  
+**10. 兜底策略Final**  
 FINAL 一般兜底代理 (10分推荐)；用GFW的可以选择兜底直连 (5分推荐)  
   
 原地址：https://gist.github.com/Teraflopst/d53f1dbc3dcc350154c1beba03290a4b  
