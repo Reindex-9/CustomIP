@@ -23,7 +23,7 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 
 # 常见问题  
 1. 若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存即可。  
-2. 订阅链接转换后保存失败提示EOF，可能是后端的问题，切换一个。
+2. 订阅链接转换后保存失败提示EOF，可能是后端的问题，切换一个。ACL4SSR的默认后端，个人在转换时经常出问题。
 3. 若clash运行出现错误io：read/write on closed pipe，代表时间设定有问题，vmess协议对时间要求比较严格，清理缓存或删除订阅链接重新下载即可。
 
 # 规则集排序自定义  
