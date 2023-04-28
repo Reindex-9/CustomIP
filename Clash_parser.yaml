@@ -21,8 +21,8 @@ parsers: # array
         - name: 🚩 CustomIP #选择地区（根据地区分类节点）
           type: select
           proxies:
-            - 📶 Auto
             - 🌐 北美
+            - 📶 Auto
             - 🌐 欧洲
             - 🌐 港澳台 
             - 🌐 日韩新 
@@ -33,10 +33,10 @@ parsers: # array
         - name: ✈️ OutSide #国外网站默认
           type: select
           proxies:
+            - 🌐 港澳台 
             - 📶 Auto
             - 🌐 北美
             - 🌐 欧洲
-            - 🌐 港澳台 
             - 🌐 日韩新 
             - 🌐 大洋洲 
             - 🌐 冷门国家
@@ -77,6 +77,21 @@ parsers: # array
             - 🌐 大洋洲 
             - 🌐 冷门国家    
 
+        - name: ♾️ Final #终极策略/黑白名单模式
+          type: select
+          proxies:
+            - ✈️ OutSide
+            - 📶 Auto 
+            - DIRECT # 仅此为黑名单模式，意为「只有命中规则的网络流量，才使用代理」
+            - ✔️ PROXY
+            - 🚩 CustomIP 
+            - 🌐 北美
+            - 🌐 欧洲
+            - 🌐 港澳台 
+            - 🌐 日韩新 
+            - 🌐 大洋洲 
+            - 🌐 冷门国家        
+
         - name: ✔️ PROXY #选择节点
           type: select
           proxies:
@@ -96,21 +111,7 @@ parsers: # array
             - REJECT
             - DIRECT
 
-        ##########################################################
-        - name: ♾️ Final #终极策略/黑白名单模式
-          type: select
-          proxies:
-            - DIRECT # 黑名单模式，意为「只有命中规则的网络流量，才使用代理」
-            - 📶 Auto # 以下皆为白名单模式，未命中规则的也使用代理
-            - ✈️ OutSide
-            - ✔️ PROXY
-            - 🚩 CustomIP 
-            - 🌐 北美
-            - 🌐 欧洲
-            - 🌐 港澳台 
-            - 🌐 日韩新 
-            - 🌐 大洋洲 
-            - 🌐 冷门国家        
+
             
 
             
@@ -127,28 +128,33 @@ parsers: # array
            # - 节点名称或其他分组套娃
           
       commands:
-        - proxy-groups.✔️ PROXY.proxies=[]proxyNames # 向指定策略组添加订阅中的节点名，可使用正则过滤       
+        # commands键中每个命令可以被分为三个部分，分别是：定位+操作+设定值
+        # 定位：数组类型定位由下标0开始计算，定位中每个层级以.分割，proxy-groups.0.proxies.2表示定位到第一个策略组的第三个位置
+        # 操作：“=”覆盖，“+”在此前插入，“-”删除此位置的值
+        # 3 个内置值可用于设置策略组节点，分别是[]proxyNames，[]groupNames和[]shuffledProxyNames
+        # 例：proxy-groups.myGroup.proxies=[]proxyNames|HK # 向策略组myGroup添加所有定义的节点名，并按“HK”正则表达式过滤
+
+        - proxy-groups.✔️ PROXY.proxies=[]proxyNames # 向指定策略组添加订阅中的所有节点名       
         - proxy-groups.📶 Auto.proxies=[]proxyNames|^((?!music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|云音乐|Music|Netease|🎶|手游|游戏|game).)*$
         - proxy-groups.✔️ PROXY.proxies.0+📶 Auto # 向指定分组第一个位置添加一个 📶 Auto 节点名
 
-        - proxy-groups.🌐 北美.proxies=[]proxyNames|美国|美國|United States|US|us|加拿大|Canada
-        - proxy-groups.🌐 欧洲.proxies=[]proxyNames|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利 # 向指定策略组添加订阅中的节点名，可使用正则过滤
-        - proxy-groups.🌐 港澳台.proxies=[]proxyNames|香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan
-        - proxy-groups.🌐 日韩新.proxies=[]proxyNames|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore
-        - proxy-groups.🌐 大洋洲.proxies=[]proxyNames|新西兰|澳大利亚|澳大利亞|Australia
-        - proxy-groups.🌐 冷门国家.proxies=[]proxyNames|^((?!美国|美國|United States|US|us|加拿大|Canada|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|京港|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore|新西兰|澳大利亚|澳大利亞|Australia).)*$
+        # 向指定分组第一个位置添加一个 DIRECT 节点名，避免机场节点无法匹配上面的正则筛选而导致配置出错。 
+        - proxy-groups.🌐 北美.proxies.0=DIRECT
+        - proxy-groups.🌐 欧洲.proxies.0=DIRECT
+        - proxy-groups.🌐 港澳台.proxies.0=DIRECT
+        - proxy-groups.🌐 日韩新.proxies.0=DIRECT
+        - proxy-groups.🌐 大洋洲.proxies.0=DIRECT
+        - proxy-groups.🌐 冷门国家.proxies.0=DIRECT
 
-       # - proxy-groups.其他.proxies=[]proxyNames|^[^日台新韩美]*$ # 这个可以自定义，这个正则的意思是排除节点名字有“香日台新韩美”的节点。
+        # 向指定分组的第一个位置前插入所有订阅的节点，并按相应正则表达式过滤
+        - proxy-groups.🌐 北美.proxies.0+[]proxyNames|美国|美國|United States|US|us|加拿大|Canada
+        - proxy-groups.🌐 欧洲.proxies.0+[]proxyNames|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利 # 向指定策略组添加订阅中的节点名，可使用正则过滤
+        - proxy-groups.🌐 港澳台.proxies.0+[]proxyNames|香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan
+        - proxy-groups.🌐 日韩新.proxies.0+[]proxyNames|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore
+        - proxy-groups.🌐 大洋洲.proxies.0+[]proxyNames|新西兰|澳大利亚|澳大利亞|Australia
+        - proxy-groups.🌐 冷门国家.proxies.0+[]proxyNames|^((?!美国|美國|United States|US|us|加拿大|Canada|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|京港|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore|新西兰|澳大利亚|澳大利亞|Australia).)*$
 
-       # 为各个策略组添加一个DIRECT，避免机场节点无法匹配上面的正则筛选而导致配置出错。
-        - proxy-groups.🌐 北美.proxies.0+DIRECT
-        - proxy-groups.🌐 欧洲.proxies.0+DIRECT
-        - proxy-groups.🌐 港澳台.proxies.0+DIRECT
-        - proxy-groups.🌐 日韩新.proxies.0+DIRECT
-        - proxy-groups.🌐 大洋洲.proxies.0+DIRECT
-        - proxy-groups.🌐 冷门国家.proxies.0+DIRECT
 
-        # - proxy-groups.节点名字.proxies.0+DIRECT # 向指定分组第一个位置添加一个 DIRECT 节点名
         # 一些可能用到的正则过滤节点示例，使分组更细致
         # []proxyNames|a                         # 包含a
         # []proxyNames|^(.*)(a|b)+(.*)$          # 包含a或b
