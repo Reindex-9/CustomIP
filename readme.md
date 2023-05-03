@@ -47,9 +47,8 @@ ProxyLite.list( acl4ssr 10分推荐)；ProxyGFWlist.list( acl4ssr 7分推荐)
 ChinaDomain.list ( acl4ssr 10分推荐)；ChinaCompanyIp.list ( acl4ssr 10分推荐)  
 **9. GEO IP定位**  
 根据IP地址(支持IPv4和IPv6), 定位该IP所在的 洲、经纬度、国家、省市、ASN 等信息。  
-例如在Quantumult(X)中，设置以下规则：{"GEOIP,US,USProxy" "GEOIP,CN,Direct"}  
-这段规则的意思是，如果访问的IP在GeoIP数据库中的地理位置为美国(US)，则使用USProxy这个策略内的服务器节点进行访问；如果是中国(CN)，则使用Direct策略。
-设置GEOIP(CN)直连后在Google Play下载的Bing也走直连，显示Bing Chat无法在该地区使用。  
+例如在Quantumult(X)中，设置以下规则：{"GEOIP,US,USProxy" "GEOIP,CN,Direct"} 这段规则的意思是，如果访问的IP在GeoIP数据库中的地理位置为美国(US)，则使用USProxy这个策略内的服务器节点进行访问；如果是中国(CN)，则使用Direct策略。  
+注：设置GEOIP(CN)直连后根据日志发现在Google Play下载的Bing也走了直连，Bing Chat无法使用。  
 **10. 兜底策略Final**  
 FINAL 一般兜底代理，用GFW的可以选择兜底直连。
   
