@@ -179,8 +179,6 @@ parsers: # array
 
         - DOMAIN,clash.razord.top,DIRECT
         - DOMAIN,yacd.haishan.me,DIRECT
-        - DOMAIN-SUFFIX,xn--ngstr-lra8j.com,✔️ PROXY
-        - DOMAIN-SUFFIX,services.googleapis.cn,✔️ PROXY
 
         - RULE-SET,BanAD,🚫 Reject
         - RULE-SET,BanProgramAD,🚫 Reject
