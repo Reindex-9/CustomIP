@@ -40,18 +40,18 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 | 2 | 修正Unbreak | Unbreak.list | ConnersHua | 防止跟后续拦截冲突，提前放行 |
 | 3 | 拦截Reject |  |  | 去广告，反劫持 |
 |  |  | BanAD.list | acl4ssr | 广告联盟。只包含常见广告关键字，无副作用 |
-|   |   | BanProgramAD.list | acl4ssr | 应用内广告拦截，可能有轻微副作用 |
-|   |   | BanEasyListChina.list | acl4ssr | AdblockPlus中的中国所有的屏蔽域名 |
-|   |   | Hijacking.list | lhie1 | 反劫持 |
-| 4 | 特殊直连域名 | GoogleCN，AsianTV | | 根据需求添加 |
-| 5 | 特殊代理域名 | Netflix，OneDrive |  | 根据需求添加 |
-| 6 | 可直连也可代理 | Microsoft，Apple | | 根据需求选择 |
-| 7 | 一般代理域名 |  |  |   |
-|  |  | ProxyLite.list | acl4ssr |   |
-|   |   | ProxyGFWlist.list | acl4ssr |   |
-| 8 | 一般直连域名 |  |  |   |
-|  |  | ChinaDomain.list | acl4ssr |   |
-|   |   | ChinaCompanyIp.list | acl4ssr |   |
+|  |  | BanProgramAD.list | acl4ssr | 应用内广告拦截，可能有轻微副作用 |
+|  |  | BanEasyListChina.list | acl4ssr | AdblockPlus中的中国所有的屏蔽域名 |
+|  |  | Hijacking.list | lhie1 | 反劫持 |
+| 4 | 特殊直连 | GoogleCN，AsianTV | | 根据需求添加 |
+| 5 | 特殊代理 | Netflix，OneDrive |  | 根据需求添加 |
+| 6 | 可选 | Microsoft，Apple | | 可直连也可代理 |
+| 7 | 一般代理 |  |  |  |
+|  |  | ProxyLite.list | acl4ssr |  |
+|  |  | ProxyGFWlist.list | acl4ssr |  |
+| 8 | 一般直连 |  |  |  |
+|  |  | ChinaDomain.list | acl4ssr |  |
+|  |  | ChinaCompanyIp.list | acl4ssr |  |
 | 9 | GEO IP定位 |  |  | 根据IP地址定位该IP的地理信息。例如```GEOIP,US,USProxy```表明，若访问的IP在GeoIP数据库中的地理位置为美国(US)则使用USProxy策略。
 | 10 | 兜底策略Final |  |  | 若未命中规则，使用终极策略 |
 
