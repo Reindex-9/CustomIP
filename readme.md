@@ -8,8 +8,8 @@ emoji大全：https://emojixd.com/
 つつの订阅转换：https://m.sub.tsutsu.one/  
 ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
   
-原地址：https://github.com/Wzieee/custom-network-rules  
-使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
+> 原地址：https://github.com/Wzieee/custom-network-rules  
+> 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
 
 # Clash——paser处理  
 ### 策略组
@@ -18,14 +18,16 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 - **地区分类**  
 北美，欧洲，港澳台，日韩新，大洋洲，冷门国家  
   
-原地址：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
-使用方法：Clash-设置（Settings）-配置（Profiles）-配置文件预处理（Pasers）  
+> 原地址：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
+> 使用方法：Clash-设置（Settings）-配置（Profiles）-配置文件预处理（Pasers）  
 
 
 # 常见问题  
 1. 使用RAW链接可能导致配置下载超时，使用镜像加速域名替换RAW链接以避免出错。  
+```
   - 将 *raw.githubusercontent.com* 替换为 *raw.githubusercontents.com* => 后面加个s  
-  - https://cdn.jsdelivr.net/gh/用户名/仓库名@分支名/文件夹/文件名.list => 使用新CDN链接  
+  - https://cdn.jsdelivr.net/gh/用户名/仓库名@分支名/文件夹/文件名.list => 使用新CDN链接
+```  
 2. 若用paser更新配置后出现“context deadline exceeded”，或订阅链接转换后保存失败提示下载配置超时，关闭代理模式再重新更新保存，或者换个网络。如果还是都解决不了，复制转换后的链接到浏览器，直接下载文件，再导入Clash。  
 
 # 规则集排序自定义  
@@ -51,4 +53,4 @@ ChinaDomain.list ( acl4ssr 10分推荐)；ChinaCompanyIp.list ( acl4ssr 10分推
 **10. 兜底策略Final**  
 FINAL 一般兜底代理，用GFW的可以选择兜底直连。
   
-原地址：https://gist.github.com/Teraflopst/d53f1dbc3dcc350154c1beba03290a4b  
+> 原地址：https://gist.github.com/Teraflopst/d53f1dbc3dcc350154c1beba03290a4b  
