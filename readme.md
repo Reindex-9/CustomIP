@@ -30,27 +30,29 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 ```  
 2. 若用paser更新配置后出现“context deadline exceeded”，或订阅链接转换后保存失败提示下载配置超时，关闭代理模式再重新更新保存，或者换个网络。如果还是都解决不了，复制转换后的链接到浏览器，直接下载文件，再导入Clash。  
 
-# 规则集排序自定义  
-**1. 局域网地址**（必须有，一般直连）  
-LocalAreaNetwork.list  
-**2. 修正Unbreak**（主要防止跟后续拦截冲突，提前放行）  
-Unbreak.list（ConnersHua）  
-**3. 拦截Reject**（去广告，反劫持）  
-BanAD.list ( acl4ssr 10分推荐)；BanProgramAD.list ( acl4ssr 10分推荐)；BanEasyListChina.list ( acl4ssr 5分推荐)；Reject.list (lhie1)  
-**4. 特殊直连域名**（根据需求添加）  
-GoogleCN.list （能直连的谷歌域名）；AsianTV.list (lhie1)；Special.list (lhie1,喜欢用BT下载的推荐)；Netease Music.list (lhie1，用网易云会员破解的加上)  
-**5. 特殊代理域名**（根据需求添加）  
-Netflix.list ( acl4ssr )；OneDrive.list ( acl4ssr )；GlobalTV.list (lhie1)；AppleNews.list（ConnersHua）；HKMTMedia.list（ConnersHua）  
-**6. 可直连也可代理**（根据需求添加）  
-Microsoft，Apple  
-**7. 一般代理域名**（一般要加）  
-ProxyLite.list( acl4ssr 10分推荐)；ProxyGFWlist.list( acl4ssr 7分推荐)  
-**8. 一般直连域名**（一般要加）  
-ChinaDomain.list ( acl4ssr 10分推荐)；ChinaCompanyIp.list ( acl4ssr 10分推荐)  
-**9. GEO IP定位**  
-根据IP地址(支持IPv4和IPv6), 定位该IP所在的 洲、经纬度、国家、省市、ASN 等信息。  
-例如在QuantumultX中，设置以下规则：{"GEOIP,US,USProxy" "GEOIP,CN,Direct"} 这段规则的意思是，如果访问的IP在GeoIP数据库中的地理位置为美国(US)，则使用USProxy这个策略内的服务器节点进行访问；如果是中国(CN)，则使用Direct策略。  
-**10. 兜底策略Final**  
-FINAL 一般兜底代理，用GFW的可以选择兜底直连。
-  
+
+# 规则集排序自定义
+| 顺序 | 类别 | 规则集 | 作者 | 说明 |
+| --- | --- | --- | --- | --- |
+| 1 | 局域网地址 |  |  | 一般直连 |
+|  |  | LocalAreaNetwork.list | acl4ssr |  |
+|  |  | UnBan.list | acl4ssr | ？ |
+| 2 | 修正Unbreak | Unbreak.list | ConnersHua | 主要防止跟后续拦截冲突，提前放行 |
+| 3 | 拦截Reject |  |  | 去广告，反劫持 |
+|  |  | BanAD.list | acl4ssr | 广告联盟。只包含常见广告关键字，无副作用 |
+|   |   | BanProgramAD.list | acl4ssr | 应用内广告拦截，可能有轻微副作用 |
+|   |   | BanEasyListChina.list | acl4ssr | AdblockPlus中的中国所有的屏蔽域名 |
+|   |   | Hijacking.list | lhie1 | 反劫持 |
+| 4 | 特殊直连域名 | GoogleCN，AsianTV | | 根据需求添加 |
+| 5 | 特殊代理域名 | Netflix，OneDrive |  | 根据需求添加 |
+| 6 | 可直连也可代理 | Microsoft，Apple | | 根据需求选择 |
+| 7 | 一般代理域名 |  |  |   |
+|  |  | ProxyLite.list | acl4ssr |   |
+|   |   | ProxyGFWlist.list | acl4ssr |   |
+| 8 | 一般直连域名 |  |  |   |
+|  |  | ChinaDomain.list | acl4ssr |   |
+|   |   | ChinaCompanyIp.list | acl4ssr |   |
+| 9 | GEO IP定位 |  |  | 根据IP地址定位该IP的地理信息。例如```GEOIP,US,USProxy```表明，若访问的IP在GeoIP数据库中的地理位置为美国(US)则使用USProxy策略。
+| 10 | 兜底策略Final |  |  | 若未命中规则，使用终极策略 |
+
 > 原地址：https://gist.github.com/Teraflopst/d53f1dbc3dcc350154c1beba03290a4b  
