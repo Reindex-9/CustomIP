@@ -34,7 +34,7 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 # 规则集排序自定义
 | 顺序 | 类别 | 规则集 | 作者 | 说明 |
 | :----: | :----: | :----- | :----: | :----- |
-| 1 | 局域网 |  |  | 一般直连 |
+| 1 | 局域网Local |  |  | 一般直连 |
 |  |  | LocalAreaNetwork.list | acl4ssr |  |
 |  |  | UnBan.list | acl4ssr | ？ |
 | 2 | 修正 | Unbreak.list | ConnersHua | 防止跟后续拦截冲突，提前放行 |
