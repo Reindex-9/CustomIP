@@ -52,7 +52,7 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 | 8 | 一般直连 |  |  |  |
 |  |  | ChinaDomain.list | acl4ssr |  |
 |  |  | ChinaCompanyIp.list | acl4ssr |  |
-| 9 | GEOIP定位 |  |  | 根据IP地址定位该IP的地理信息。例如```GEOIP,US,USProxy```表明，若访问的IP在GeoIP数据库中的地理位置为美国(US)则使用USProxy策略。
+| 9 | GEOIP |  |  | 根据IP地址定位该IP的地理信息。例如```GEOIP,US,USProxy```表明，若访问的IP在GeoIP数据库中的地理位置为美国(US)则使用USProxy策略。
 | 10 | 兜底策略 |  |  | Final，若未命中规则，使用终极策略 |
 
 > 原地址：https://gist.github.com/Teraflopst/d53f1dbc3dcc350154c1beba03290a4b  
