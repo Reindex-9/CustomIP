@@ -38,7 +38,7 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 |  |  | LocalAreaNetwork.list | acl4ssr |  |
 |  |  | UnBan.list | acl4ssr | ？ |
 | 2 | 修正 | Unbreak.list | ConnersHua | 防止跟后续拦截冲突，提前放行 |
-| 3 | REJECT |  |  | 拦截，去广告，反劫持 |
+| 3 | 拦截REJECT |  |  | 去广告，反劫持 |
 |  |  | BanAD.list | acl4ssr | 广告联盟。只包含常见广告关键字，无副作用 |
 |  |  | BanProgramAD.list | acl4ssr | 应用内广告拦截，可能有轻微副作用 |
 |  |  | BanEasyListChina.list | acl4ssr | AdblockPlus中的中国所有的屏蔽域名 |
