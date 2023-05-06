@@ -23,9 +23,10 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 
 
 # 常见问题  
-1. 若用paser更新配置后出现“context deadline exceeded”错误提示无法切换配置，或订阅链接转换后提示下载配置超时，关闭代理模式再重新更新保存，或者换个网络，都不行就是配置有错误。  
-2. 订阅链接转换后保存失败提示EOF，不一定配置有误，可能是后端的问题，或者配置超时。如果换网络换订阅链接转换网站关代理app都解决不了，试试复制转换后的链接到浏览器，直接下载文件，再导入Clash。  
-3. 若clash运行出现错误io：read/write on closed pipe，代表时间设定有问题，vmess协议对时间要求比较严格，清理缓存或删除订阅链接重新下载即可。
+1. 使用RAW链接可能导致配置下载超时，使用镜像加速域名替换RAW链接以避免出错。  
+  - 将 *raw.githubusercontent.com* 替换为 *raw.githubusercontents.com* => 后面加个s  
+  - https://cdn.jsdelivr.net/gh/用户名/仓库名@分支名/文件夹/文件名.list => 使用新CDN链接  
+2. 若用paser更新配置后出现“context deadline exceeded”，或订阅链接转换后保存失败提示下载配置超时，关闭代理模式再重新更新保存，或者换个网络。如果还是都解决不了，复制转换后的链接到浏览器，直接下载文件，再导入Clash。  
 
 # 规则集排序自定义  
 **1. 局域网地址**（必须有，一般直连）  
