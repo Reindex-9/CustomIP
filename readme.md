@@ -34,11 +34,11 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 # 规则集排序自定义
 | 顺序 | 类别 | 规则集 | 作者 | 说明 |
 | :----: | :----: | :----- | :----: | :----- |
-| 1 | 优先直连 |  |  |  |
+| 1 | 直连 |  |  | 优先级最高 |
 |  |  | LocalAreaNetwork.list | acl4ssr | 局域网地址 |
 |  |  | UnBan.list | acl4ssr | ？ |
 |  |  | Unbreak.list | ConnersHua | 修正，防止跟后续拦截冲突，提前放行 |
-| 2 | 拦截 |  |  | 去广告，反劫持 |
+| 2 | REJECT |  |  | 拦截，去广告，反劫持 |
 |  |  | BanAD.list | acl4ssr | 广告联盟。只包含常见广告关键字，无副作用 |
 |  |  | BanProgramAD.list | acl4ssr | 应用内广告拦截，可能有轻微副作用 |
 |  |  | BanEasyListChina.list | acl4ssr | AdblockPlus中的中国所有的屏蔽域名 |
@@ -52,7 +52,7 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 | 7 | 一般直连 |  |  |  |
 |  |  | ChinaDomain.list | acl4ssr |  |
 |  |  | ChinaCompanyIp.list | acl4ssr |  |
-| 8 | GEOIP定位 |  |  | 根据IP地址定位该IP的地理信息。例如```GEOIP,US,USProxy```表明，若访问的IP在GeoIP数据库中的地理位置为美国(US)则使用USProxy策略。
-| 9 | 兜底策略 |  |  | Final，若未命中规则，使用终极策略 |
+| 8 | GEOIP |  |  | 根据IP地址定位该IP的地理信息。例如```GEOIP,US,USProxy```表明，若访问的IP在GeoIP数据库中的地理位置为美国(US)则使用USProxy策略。
+| 9 | FINAL |  |  | 兜底策略，若未命中规则，使用终极策略 |
 
 > 原地址：https://gist.github.com/Teraflopst/d53f1dbc3dcc350154c1beba03290a4b  
