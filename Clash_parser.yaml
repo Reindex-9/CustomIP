@@ -193,16 +193,13 @@ parsers: # array
         - RULE-SET,Apple,🔘 Option #若想icloud和apple使用不同的策略，将icloud规则集顺序放在apple上一位即可
 
         - RULE-SET,BilibiliHMT,🌐 港澳台
-        - RULE-SET,Bilibili,DIRECT
 
-        - RULE-SET,ProxyMedia,✈️ OutSide
-        - RULE-SET,ChinaMedia,DIRECT
+        - RULE-SET,GlobalMedia,✈️ OutSide
+        - RULE-SET,ChinaMedia,🎯 Direct
 
-        - RULE-SET,ProxyGFWlist,✈️ OutSide
-        - RULE-SET,ChinaDomain,DIRECT
-        - RULE-SET,ChinaCompanyIp,DIRECT
-        - RULE-SET,ChinaIp,DIRECT
-        - RULE-SET,Download,DIRECT
+        - RULE-SET,Global,✈️ OutSide
+        - RULE-SET,China,🎯 Direct
+        - RULE-SET,ChinaIPs,🎯 Direct
 
         - GEOIP,CN,🎯 Direct,no-resolve
         - MATCH,♾️ Final # 规则之外的
@@ -284,7 +281,7 @@ parsers: # array
         Apple: # Apple 域名列表
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/Apple.yaml"
+          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple_Classical.yaml"
           path: ./ruleset/Apple.yaml
           interval: 86400
           
@@ -293,8 +290,9 @@ parsers: # array
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml"
           path: ./ruleset/Microsoft.yaml
-          interval: 86400        
+          interval: 86400       
 
+        # 🌐🎯🌐🎯🌐🎯
         BilibiliHMT: # bilibili港澳台
           type: http
           behavior: classical
@@ -302,60 +300,38 @@ parsers: # array
           path: ./Ruleset/BilibiliHMT.yaml
           interval: 86400
 
-        # 🌐🎯🌐🎯🌐🎯
-        Bilibili: # bilibili
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/Ruleset/Bilibili.yaml"
-          path: ./Ruleset/Bilibili.yaml
-          interval: 86400
-
         # 🎯✈️🎯✈️🎯✈️     
-        ProxyMedia: # 国外流媒体
+        GlobalMedia: # 国外流媒体
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ProxyMedia.yaml"
-          path: ./ruleset/ProxyMedia.yaml
+          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia_Classical.yaml"
+          path: ./ruleset/GlobalMedia.yaml
           interval: 86400
 
         ChinaMedia: # 国内流媒体
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaMedia.yaml"
+          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.yaml"
           path: ./ruleset/ChinaMedia.yaml
           interval: 86400
 
-        ProxyGFWlist: # GFW的全量列表
+        Global: # 国外通用
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ProxyGFWlist.yaml"
-          path: ./ruleset/ProxyGFWlist.yaml
+          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Global/Global_Classical.yaml"
+          path: ./ruleset/Global.yaml
           interval: 86400
 
-        ChinaDomain: # 国内常见域名、直连CDN等
+        China: # 国内通用
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaDomain.yaml"
-          path: ./ruleset/ChinaDomain.yaml
+          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/China/China_Classical.yaml"
+          path: ./ruleset/China.yaml
           interval: 86400
 
-        ChinaCompanyIp: # 国内BAT公司及云服务厂商的IP段
+        ChinaIPs: # 准确度高，但按条排列，查找效率较低
           type: http
           behavior: ipcidr
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaCompanyIp.yaml"
-          path: ./ruleset/ChinaCompanyIp.yaml
-          interval: 86400
-
-        ChinaIp: # 准确度高，但按条排列，查找效率较低
-          type: http
-          behavior: ipcidr
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaIp.yaml"
-          path: ./ruleset/ChinaCoIp.yaml
-          interval: 86400
-
-        Download: # 一些下载用的域名
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/Download.yaml"
-          path: ./ruleset/Download.yaml
+          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaIPs/ChinaIPs_IP.yaml"
+          path: ./ruleset/ChinaIPs.yaml
           interval: 86400
