@@ -38,7 +38,6 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 | 1 | DIRECT直连 |  |  | 优先级最高 |
 |  |  | LocalAreaNetwork.list | acl4ssr | 局域网地址 |
 |  |  | UnBan.list | acl4ssr | ？ |
-|  |  | Unbreak.list | ConnersHua | 修正，防止跟后续拦截冲突，提前放行 |
 | 2 | REJECT拦截 |  |  | 去广告，反劫持 |
 |  |  | BanAD.list | acl4ssr | 广告联盟。只包含常见广告关键字，无副作用 |
 |  |  | BanProgramAD.list | acl4ssr | 应用内广告拦截，可能有轻微副作用 |
