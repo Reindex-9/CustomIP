@@ -1,4 +1,5 @@
 # URL: https://raw.githubusercontents.com/Reindex-9/CustomIP/main/proxy/NeteaseMusic/NeteaseMusic.yaml
+# 🎧𝐌𝐮𝐬𝐢𝐜 𝟏 𝟐 𝟑 𝟒 𝟓 𝟔 𝟕 𝟖
 proxies:
   - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟏
     type: ss
@@ -6,3 +7,8 @@ proxies:
     port: 30001
     cipher: aes-128-gcm
     password: desperadoj.com_free_proxy_etg0
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟐
+    type: http
+    server: 127.0.0.1
+    port: 2635
