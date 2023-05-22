@@ -16,7 +16,7 @@ parsers: # array
         NeteaseMusic:
           type: http
           path: ./Proxy/NeteaseMusic.yaml
-          url: https://raw.githubusercontents.com/Reindex-9/CustomIP/main/proxy/NeteaseMusic.yaml
+          url: https://raw.githubusercontents.com/Reindex-9/CustomIP/main/proxy/NeteaseMusic/NeteaseMusic.yaml
           interval: 3600
           health-check:
             enable: true
@@ -164,7 +164,7 @@ parsers: # array
         # 例：proxy-groups.myGroup.proxies=[]proxyNames|HK # 向策略组myGroup添加所有定义的节点名，并按“HK”正则表达式过滤
 
         - proxy-groups.✔️ PROXY.proxies=[]proxyNames # 向指定策略组添加订阅中的所有节点名       
-        - proxy-groups.📶 Auto.proxies=[]proxyNames|^((?!music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|云音乐|Music|Netease|🎶|手游|游戏|game).)*$
+        - proxy-groups.📶 Auto.proxies=[]proxyNames|^((?!music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$
         - proxy-groups.✔️ PROXY.proxies.0+📶 Auto # 向指定分组第一个位置添加一个 📶 Auto 节点名
 
         # 向指定分组第一个位置添加一个 DIRECT 节点名，避免机场节点无法匹配上面的正则筛选而导致配置出错。 
