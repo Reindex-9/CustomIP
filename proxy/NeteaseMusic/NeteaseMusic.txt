@@ -1,0 +1,59 @@
+# URL: https://raw.githubusercontents.com/Reindex-9/CustomIP/main/proxy/NeteaseMusic/NeteaseMusic.yaml
+proxies:
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟏
+    type: http
+    server: 106.52.127.72
+    port: 19951
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟐
+    type: http
+    server: 3music.poetyin.me
+    port: 100
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟑
+    type: http
+    server: block4music.poetyin.me
+    port: 39000
+
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟒
+    type: ss
+    server: blockmusic.poetyin.me
+    port: 30003
+    cipher: aes-128-gcm
+    password: desperadoj.com_free_proxy_x80j
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟓
+    type: ss
+    server: music.desperadoj.com
+    port: 30001
+    cipher: aes-128-gcm
+    password: desperadoj.com_free_proxy_emx2
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟓(2)
+    type: ss
+    server: music.desperadoj.com
+    port: 30001
+    cipher: aes-128-gcm
+    password: desperadoj.com_free_proxy_etg0
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟔
+    type: ss
+    server: music.desperadoj.com
+    port: 30003
+    cipher: aes-128-gcm
+    password: desperadoj.com_free_proxy_emx2
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟕
+    type: ss
+    server: proxy.plusmedia.site
+    port: 58080
+    cipher: rc4-md5
+    password: ieG9l1nte5eo7IBZas84jLi
+    
+  - name: 🎧𝐌𝐮𝐬𝐢𝐜𝟖
+    type: ss
+    server: proxy.plusmedia.site
+    port: 58081
+    cipher: rc4-md5
+    password: ieG9l1nte5eo7IBZas84jLi
+    
