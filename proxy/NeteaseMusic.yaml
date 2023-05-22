@@ -1,0 +1,10 @@
+# URL:     https://raw.githubusercontent.com/DesperadoJ/Rules-for-UnblockNeteaseMusic/master/Clash/Proxy/NeteaseMusic.yaml
+# 参考Project: https://github.com/DesperadoJ/Rules-for-UnblockNeteaseMusic
+
+proxies:
+  - name: UnlockMusic
+    type: ss
+    server: music.desperadoj.com
+    port: 30001
+    cipher: aes-128-gcm
+    password: desperadoj.com_free_proxy_etg0
