@@ -107,6 +107,8 @@ parsers: # array
           type: select
           use:
             - NeteaseMusic
+          proxies:
+            - DIRECT
 
         - name: 🎮 Game
           type: select
