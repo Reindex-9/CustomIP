@@ -92,8 +92,8 @@ parsers: # array
           type: select
           proxies:
             - ✈️ OutSide
-            - 📶 Auto 
             - DIRECT # 仅此为黑名单模式，意为「只有命中规则的网络流量，才使用代理」
+            - 📶 Auto 
             - ✔️ PROXY
             - 🚩 CustomIP 
             - 🌐 北美
