@@ -195,9 +195,22 @@ parsers: # array
 
 
   # 添加规则
-  # 规则集排序：本地局域网 -> 修正Unbreak -> 拦截Reject（广告/劫持） -> 特殊直连 -> 特殊代理 -> 一般直连域名 -> 一般代理域名 -> IP段或者GEO -> 兜底Final
+      # 规则集排序：本地局域网 -> 修正Unbreak -> 拦截Reject（广告/劫持） -> 特殊直连 -> 特殊代理 -> 一般直连域名 -> 一般代理域名 -> IP段或者GEO -> 兜底Final
+      # 规则由上往下遍历，如上面规则已经命中，则不再往下处理
+      # 匹配参数：
+        # DOMAIN-SUFFIX：域名后缀匹配
+        # DOMAIN：域名匹配
+        # DOMAIN-KEYWORD：域名关键字匹配
+        # IP-CIDR：IP 段匹配
+        # SRC-IP-CIDR：源 IP 段匹配
+        # GEOIP：GEOIP 数据库（国家代码）匹配
+        # DST-PORT：目标端口匹配
+        # SRC-PORT：源端口匹配
+        # PROCESS-NAME：源进程名匹配（e.g. steam.exe）
+        # RULE-SET：Rule Provider 规则匹配
+        # MATCH：全匹配
 
-      prepend-rules: # 规则由上往下遍历，如上面规则已经命中，则不再往下处理
+      prepend-rules: 
         - RULE-SET,LocalAreaNetwork,DIRECT
         - RULE-SET,UnBan,DIRECT
 
@@ -218,6 +231,9 @@ parsers: # array
         - RULE-SET,Microsoft,🔘 Option
         - RULE-SET,Apple,🔘 Option #若想icloud和apple使用不同的策略，将icloud规则集顺序放在apple上一位即可
 
+        - PROCESS-NAME,steam.exe,🎯 Direct # 下载、上传相关
+        - PROCESS-NAME,steamservice.exe,🎯 Direct # 处理installscripts iirc（安装DX、VS可再发行版等）
+        - PROCESS-NAME,steamwebhelper.exe,🎮 Game # 商店、好友界面
         - RULE-SET,Game,🎮 Game
 
         - RULE-SET,GlobalMedia,✈️ OutSide
