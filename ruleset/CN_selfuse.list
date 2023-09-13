@@ -1,6 +1,6 @@
 # 米哈游HoYoverse（最后更新：2023-7-20）
 # 来源：https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Clash/HoYoverse
-# DOMAIN-SUFFIX: 7 ； TOTAL: 7
+# TOTAL: 7 ； DOMAIN-SUFFIX: 7
 DOMAIN-SUFFIX,genshinimpact.com
 DOMAIN-SUFFIX,honkaiimpact3.com
 DOMAIN-SUFFIX,honkaistarrail.com
