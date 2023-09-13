@@ -201,9 +201,9 @@ parsers: # array
         # DOMAIN-SUFFIX：域名后缀匹配
         # DOMAIN：域名匹配
         # DOMAIN-KEYWORD：域名关键字匹配
-        # IP-CIDR：IP 段匹配
+        # IP-CIDR：目标IP 段匹配（IPv4，匹配IPv6的关键字为IP-CIDR6）
         # SRC-IP-CIDR：源 IP 段匹配
-        # GEOIP：GEOIP 数据库（国家代码）匹配
+        # GEOIP：GEOIP 数据库（国家代码）匹配，将IP匹配IP归属地
         # DST-PORT：目标端口匹配
         # SRC-PORT：源端口匹配
         # PROCESS-NAME：源进程名匹配（e.g. steam.exe）
@@ -211,6 +211,10 @@ parsers: # array
         # MATCH：全匹配
 
       prepend-rules: 
+        - DOMAIN-SUFFIX,xn--ngstr-lra8j.com,✈️ OutSide
+        - DOMAIN-SUFFIX,services.googleapis.cn,🚩 CustomIP
+        - RULE-SET,GoogleCNProxyIP,🚩 CustomIP # 谷歌在国内的可直连域名
+
         - RULE-SET,LocalAreaNetwork,DIRECT
         - RULE-SET,UnBan,DIRECT
 
@@ -236,32 +240,42 @@ parsers: # array
         - PROCESS-NAME,steamwebhelper.exe,🎮 Game # 商店、好友界面
         - RULE-SET,Game,🎮 Game
 
-        - RULE-SET,GlobalMedia,✈️ OutSide
         - RULE-SET,ChinaMedia,🎯 Direct
+        - RULE-SET,ProxyMedia,✈️ OutSide
+        
+        - RULE-SET,ProxyGFWlist,✈️ OutSide
+        - RULE-SET,ChinaDomain,🎯 Direct
+        - RULE-SET,ChinaCompanyIp,🎯 Direct
+        - RULE-SET,Download,🎯 Direct
+        - RULE-SET,ChinaIp,🎯 Direct
 
-        - RULE-SET,Global,✈️ OutSide
-        - RULE-SET,China,🎯 Direct
-        - RULE-SET,ChinaMax,🎯 Direct
-
-        - GEOIP,CN,🎯 Direct,no-resolve
+        - GEOIP,CN,🎯 Direct,no-resolve # no-resolve表示不进行dns解析
         - MATCH,♾️ Final # 规则之外的
 
   # 添加规则集
       # ruleset 指的是配置中包含的分流规则，
       # custom_proxy_group 指的是最终在Clash中呈现的分流策略组及其排序。
-      # behavior为规则集类型，DOMAIN匹配域名，ipcidr为IPv4 / IPv6 集合，classical任意（匹配性能最差）
-      # url为下载地址，path 指定了规则集文件在本地保存的路径，即相对于当前配置文件所在目录的
+      # behavior为规则集类型，DOMAIN匹配域名，ipcidr为IPv4 / IPv6 集合，classical任意（匹配性能最差）。若设置成domain或ipcidr，yaml文件里格式需要纯净：例如，若设置成ipcidr，里面的非注释内容必须形如【- '1.0.1.0/24'】，不能是【- IP-CIDR,120.232.181.162/32,no-resolve】。若为后者，只能设置成classical类型。
+      # url为下载地址，path 指定了规则集文件在本地保存的路径，即相对于当前配置文件所在目录的路径
 
       mix-rule-providers: 
+        # 🚩🚩🚩🚩🚩🚩
+        GoogleCNProxyIP: # 🚩
+          type: http
+          behavior: classical
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/Ruleset/GoogleCNProxyIP.yaml"
+          path: ./ruleset/GoogleCNProxyIP.yaml
+          interval: 86400
+
         # 🎯🎯🎯🎯🎯🎯
-        LocalAreaNetwork: # 局域网地址
+        LocalAreaNetwork: # 局域网地址 🎯
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/LocalAreaNetwork.yaml"
           path: ./ruleset/LocalAreaNetwork.yaml
           interval: 86400
 
-        UnBan:
+        UnBan: # 🎯
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/UnBan.yaml"
@@ -269,28 +283,28 @@ parsers: # array
           interval: 86400
 
         # 🚫🚫🚫🚫🚫🚫
-        BanAD: # 广告联盟。只包含常见广告关键字，无副作用，放心使用
+        BanAD: # 广告联盟 🚫 只包含常见广告关键字，无副作用，放心使用
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/BanAD.yaml"
           path: ./ruleset/BanAD.yaml
           interval: 86400
         
-        BanProgramAD: # 应用内广告拦截，可能有轻微副作用
+        BanProgramAD: # 应用内广告拦截 🚫 可能有轻微副作用
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/BanProgramAD.yaml"
           path: ./ruleset/BanProgramAD.yaml
           interval: 86400
 
-        BanEasyListChina: # AdblockPlus中的中国所有的屏蔽域名
+        BanEasyListChina: # AdblockPlus中的中国所有的屏蔽域名 🚫
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/BanEasyListChina.yaml"
           path: ./ruleset/BanEasyListChina.yaml
           interval: 86400
 
-        Hijacking: # 运营商劫持
+        Hijacking: # 运营商劫持 🚫
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.yaml"
@@ -298,28 +312,29 @@ parsers: # array
           interval: 86400
 
         # 🚩🚩🚩🚩🚩🚩 
-        OpenAI: # OpenAI 域名列表
+        OpenAI: # OpenAI 域名列表 🚩
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/OpenAI/OpenAI.yaml"
           path: ./ruleset/OpenAI.yaml
           interval: 86400
 
-        Bing: # Bing 域名列表
+        Bing: # Bing 域名列表 🚩
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Bing/Bing.yaml"
           path: ./ruleset/Bing.yaml
           interval: 86400
 
-        Google: # Google 域名列表
+        Google: # Google 域名列表 🚩
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml"
           path: ./ruleset/Google.yaml
           interval: 86400
 
-        CN_selfuse: # 自用直连
+        # 🎯🎯🎯🎯🎯🎯
+        CN_selfuse: # 自用直连 🎯
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/CN_selfuse.yaml"
@@ -327,14 +342,14 @@ parsers: # array
           interval: 86400
 
         # 🔘🔘🔘🔘🔘🔘
-        Apple: # Apple 域名列表
+        Apple: # Apple 域名列表 🔘
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple_Classical.yaml"
           path: ./ruleset/Apple.yaml
           interval: 86400
           
-        Microsoft: # Microsoft 域名列表
+        Microsoft: # Microsoft 域名列表 🔘
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml"
@@ -342,45 +357,59 @@ parsers: # array
           interval: 86400       
 
         # 🌐🎯🌐🎯🌐🎯        
-        Game: # 游戏（steam等）
+        Game: # 游戏（steam等） 🎮
           type: http
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.yaml"
           path: ./Ruleset/Game.yaml
           interval: 86400
 
-        # 🎯✈️🎯✈️🎯✈️     
-        GlobalMedia: # 国外流媒体
+        # 🎯✈️🎯✈️🎯✈️   
+        ChinaMedia: # 国内流媒体 🎯
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia_Classical.yaml"
-          path: ./ruleset/GlobalMedia.yaml
-          interval: 86400
-
-        ChinaMedia: # 国内流媒体
-          type: http
-          behavior: classical
-          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.yaml"
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaMedia.yaml"
           path: ./ruleset/ChinaMedia.yaml
           interval: 86400
 
-        Global: # 国外通用
+        ProxyMedia: # 国外流媒体 ✈️
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Global/Global_Classical.yaml"
-          path: ./ruleset/Global.yaml
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ProxyMedia.yaml"
+          path: ./ruleset/ProxyMedia.yaml
           interval: 86400
 
-        China: # 国内通用
+        ProxyGFWlist: # GFW的全量列表 ✈️
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/China/China_Classical.yaml"
-          path: ./ruleset/China.yaml
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ProxyGFWlist.yaml"
+          path: ./ruleset/ProxyGFWlist.yaml
           interval: 86400
 
-        ChinaMax: # 国内域名，已排除ChinaMedia
+        ChinaDomain: # 国内常见域名、直连CDN等 🎯 （很全，常用网址都有）
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMaxNoMedia/ChinaMaxNoMedia_Classical.yaml"
-          path: ./ruleset/ChinaMax.yaml
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaDomain.yaml"
+          path: ./ruleset/ChinaDomain.yaml
+          interval: 86400
+
+        ChinaCompanyIp: # 国内BAT公司及云服务厂商的IP段 🎯
+          type: http
+          behavior: ipcidr
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaCompanyIp.yaml"
+          path: ./ruleset/ChinaCompanyIp.yaml
+          interval: 86400
+
+        Download: # 下载服务，包括磁力等 🎯
+          type: http
+          behavior: classical
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/Download.yaml"
+          path: ./ruleset/Download.yaml
+          interval: 86400
+
+        ChinaIp: # 国内的IP地址段 🎯 比GEOIP好，电脑性能好可入
+          type: http
+          behavior: ipcidr
+          url: "https://raw.githubusercontents.com/ACL4SSR/ACL4SSR/master/Clash/Providers/ChinaIp.yaml"
+          path: ./ruleset/ChinaIp.yaml
           interval: 86400
