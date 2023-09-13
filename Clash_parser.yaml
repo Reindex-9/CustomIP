@@ -106,9 +106,9 @@ parsers: # array
         - name: 🎮 Game
           type: select
           proxies:
-            - 🌐 冷门国家
-            - DIRECT
             - ✈️ OutSide
+            - DIRECT
+            - 🌐 冷门国家
             - 📶 Auto
             - ✔️ PROXY
             - 🚩 CustomIP 
