@@ -235,9 +235,7 @@ parsers: # array
         - RULE-SET,Microsoft,🔘 Option
         - RULE-SET,Apple,🔘 Option #若想icloud和apple使用不同的策略，将icloud规则集顺序放在apple上一位即可
 
-        - PROCESS-NAME,steam.exe,🎯 Direct # 下载、上传相关
-        - PROCESS-NAME,steamservice.exe,🎯 Direct # 处理installscripts iirc（安装DX、VS可再发行版等）
-        - PROCESS-NAME,steamwebhelper.exe,🎮 Game # 商店、好友界面
+        - PROCESS-NAME,steamwebhelper.exe,🎮 Game # steam商店、好友界面
         - RULE-SET,Game,🎮 Game
 
         - RULE-SET,ChinaMedia,🎯 Direct
