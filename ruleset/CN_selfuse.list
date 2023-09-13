@@ -1,9 +1,6 @@
-# NAME: HoYoverse
-# AUTHOR: blackmatrix7
-# REPO: https://github.com/blackmatrix7/ios_rule_script
-# UPDATED: 2023-04-07 14:51:44
-# DOMAIN-SUFFIX: 7
-# TOTAL: 7
+# 米哈游HoYoverse（最后更新：2023-7-20）
+# 来源：https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Clash/HoYoverse
+# DOMAIN-SUFFIX: 7 ； TOTAL: 7
 DOMAIN-SUFFIX,genshinimpact.com
 DOMAIN-SUFFIX,honkaiimpact3.com
 DOMAIN-SUFFIX,honkaistarrail.com
@@ -11,3 +8,8 @@ DOMAIN-SUFFIX,hoyo.link
 DOMAIN-SUFFIX,hoyolab.com
 DOMAIN-SUFFIX,hoyoverse.com
 DOMAIN-SUFFIX,n0vadesktop.com
+
+# 源进程名（电脑软件）
+PROCESS-NAME,YuanShen.exe
+PROCESS-NAME,steam.exe
+PROCESS-NAME,steamservice.exe
