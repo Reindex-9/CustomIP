@@ -231,6 +231,7 @@ parsers: # array
         - RULE-SET,Bing,🚩 CustomIP
         - RULE-SET,Google,🚩 CustomIP
 
+        - RULE-SET,ProxySelfuse,✈️ OutSide
         - RULE-SET,CN_selfuse,🎯 Direct
 
         - RULE-SET,Microsoft,🔘 Option
@@ -238,6 +239,7 @@ parsers: # array
 
         - PROCESS-NAME,steam.exe,🎯 Direct # steam下载、上传相关
         - PROCESS-NAME,steamservice.exe,🎯 Direct # steam处理installscripts iirc（安装DX、VS可再发行版等）
+        - PROCESS-NAME,Stardew Valley.exe,🎯 Direct # 星露谷物语
         - PROCESS-NAME,steamwebhelper.exe,🎮 Game # steam商店、好友界面
         - RULE-SET,Game,🎮 Game
 
@@ -333,6 +335,15 @@ parsers: # array
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml"
           path: ./ruleset/Google.yaml
           interval: 86400
+
+        # ✈️✈️✈️✈️✈️✈️
+        ProxySelfuse: # 自用翻墙 ✈️
+          type: http
+          behavior: classical
+          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/ProxySelfuse.yaml"
+          path: ./ruleset/ProxySelfuse.yaml
+          interval: 86400
+
 
         # 🎯🎯🎯🎯🎯🎯
         CN_selfuse: # 自用直连 🎯
