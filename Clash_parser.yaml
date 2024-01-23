@@ -210,7 +210,11 @@ parsers: # array
         # PROCESS-NAME：源进程名匹配（e.g. steam.exe）
         # RULE-SET：Rule Provider 规则匹配
         # MATCH：全匹配
-      # 匹配源进程名时貌似只能通过写入paser，如果利用在线规则集貌似不生效
+      # 匹配源进程名时貌似只能通过写入paser，如果利用在线规则集貌似不生效(存疑，可能生效延迟)
+
+      # github官方站实时更新，但加载配置时可能超时；github镜像站存在生效延迟，在线规则集无法实时更新，如需实时试验规则，只能直接写入paser
+      # 官方raw链域名：raw.githubusercontent.com
+      # 镜像站raw链域名：raw.githubusercontents.com 或 raw.gitmirror.com 或 cdn.jsdelivr.net
 
       prepend-rules: 
         - DOMAIN-SUFFIX,xn--ngstr-lra8j.com,✈️ OutSide
