@@ -1,7 +1,7 @@
 payload:
 # 杂（最后更新：2024-1-24）
-# TOTAL: 1 ； DOMAIN-SUFFIX: 1
-  - DOMAIN-SUFFIX,axutongxue.com
+# TOTAL: 1 ； DOMAIN: 1
+  - DOMAIN,axutongxue
 
 # 米哈游HoYoverse（最后更新：2024-1-8）
 # 来源：https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Clash/HoYoverse
