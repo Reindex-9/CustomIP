@@ -199,9 +199,9 @@ parsers: # array
       # 规则集排序：本地局域网 -> 修正Unbreak -> 拦截Reject（广告/劫持） -> 特殊直连 -> 特殊代理 -> 一般直连域名 -> 一般代理域名 -> IP段或者GEO -> 兜底Final
       # 规则由上往下遍历，如上面规则已经命中，则不再往下处理
       # 匹配参数：
-        # DOMAIN-SUFFIX：域名后缀匹配
-        # DOMAIN：域名匹配
-        # DOMAIN-KEYWORD：域名关键字匹配
+        # DOMAIN-KEYWORD：域名关键字(即主机名)匹配
+        # DOMAIN-SUFFIX：域名后缀（即顶级域名）匹配，最通用的域名后缀为.com
+        # DOMAIN：域名（域名关键字+域名后缀）匹配
         # IP-CIDR：目标IP 段匹配（IPv4，匹配IPv6的关键字为IP-CIDR6）
         # SRC-IP-CIDR：源 IP 段匹配
         # GEOIP：GEOIP 数据库（国家代码）匹配，将IP匹配IP归属地
