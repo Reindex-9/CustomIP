@@ -78,6 +78,7 @@ parsers: # array
           type: select
           proxies:
             - DIRECT
+            - ✈️ OutSide
             - 📶 Auto
             - ✔️ PROXY
             - 🚩 CustomIP 
