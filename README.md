@@ -13,17 +13,17 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 > 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
 
 # 规则匹配参数
-  - DOMAIN-KEYWORD：域名关键字(即主机名)匹配
-  - DOMAIN-SUFFIX：域名后缀（即顶级域名）匹配，最通用的域名后缀为.com
-  - DOMAIN：域名（域名关键字+域名后缀）匹配
-  - IP-CIDR：目标IP 段匹配（IPv4，匹配IPv6的关键字为IP-CIDR6）
-  - SRC-IP-CIDR：源 IP 段匹配
-  - GEOIP：GEOIP 数据库（国家代码）匹配，将IP匹配IP归属地
-  - DST-PORT：目标端口匹配
-  - SRC-PORT：源端口匹配
-  - PROCESS-NAME：源进程名匹配（e.g. steam.exe）
-  - RULE-SET：Rule Provider 规则匹配
-  - MATCH：全匹配
+- DOMAIN-KEYWORD：域名关键字(即主机名)匹配
+- DOMAIN-SUFFIX：域名后缀（即顶级域名）匹配，最通用的域名后缀为.com
+- DOMAIN：域名（域名关键字+域名后缀）匹配
+- IP-CIDR：目标IP 段匹配（IPv4，匹配IPv6的关键字为IP-CIDR6）
+- SRC-IP-CIDR：源 IP 段匹配
+- GEOIP：GEOIP 数据库（国家代码）匹配，将IP匹配IP归属地
+- DST-PORT：目标端口匹配
+- SRC-PORT：源端口匹配
+- PROCESS-NAME：源进程名匹配（e.g. steam.exe）
+- RULE-SET：Rule Provider 规则匹配
+- MATCH：全匹配
 
 # Clash——paser处理  
 ### 策略组
