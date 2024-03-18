@@ -1,6 +1,6 @@
 网络搬运后修改留档自用。  
 emoji大全：https://emojixd.com/  
-注：直接修改本地设置，才能实时更改分流结果；修改github规则集，订阅转换时会有延迟
+注：直接修改本地设置，才能实时更改分流结果；修改github规则集会有延迟
 
 # ACL4SSR——订阅链接转换  
 自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
