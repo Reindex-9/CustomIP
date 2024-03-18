@@ -1,6 +1,7 @@
 payload:
 
-# 最后更新：2024-1-15）
-# TOTAL: 1 ； DOMAIN-SUFFIX: 1
+# 最后更新：2024-3-18）
+# TOTAL: 3 ； DOMAIN-SUFFIX: 3
   - DOMAIN-SUFFIX,aitianhu.com
   - DOMAIN-SUFFIX,coze.com
+  - DOMAIN-SUFFIX,ciciai.com
