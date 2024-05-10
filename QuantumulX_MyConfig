@@ -324,6 +324,8 @@ https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list, tag=Apple, force-policy=Option, update-interval=172800, opt-parser=true, enabled=true
 
 # 🌐🎯🌐🎯🌐🎯
+# 米哈游
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/HoYoverse/HoYoverse.list, tag=HoYoverse, force-policy=DirectT, update-interval=172800, opt-parser=true, enabled=true
 # Game
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.list, tag=Game, force-policy=Game, update-interval=172800, opt-parser=true, enabled=true
 
