@@ -49,6 +49,10 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 ## Shadowrocket
 参考配置：https://johnshall.github.io/Shadowrocket-ADBlock-Rules-Forever/lazy_group.conf
 
+## V2Ray
+绕过大陆（白名单模式）：如果访问的网站在白名单内，该网站直连；反之如果不在白名单内，则通过代理。FINAL代理。
+黑名单模式：如果访问的网站在黑名单内，该网站通过代理；如果不在黑名单内，则直连。FINAL直连。
+
 # 常见问题  
 1. 使用RAW链接可能导致配置下载超时，使用镜像加速域名替换RAW链接以避免出错。  
 ```
