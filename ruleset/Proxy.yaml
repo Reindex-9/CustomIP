@@ -6,3 +6,6 @@ payload:
   - DOMAIN-SUFFIX,coze.com
   - DOMAIN-SUFFIX,ciciai.com
   - DOMAIN-SUFFIX,freeok.vip
+  
+  - DOMAIN-KEYWORD,gmail
+  - DOMAIN-KEYWORD,google
