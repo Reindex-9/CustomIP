@@ -361,7 +361,7 @@ parsers: # array
         CustomIPSelfuse: # 自用干净ip代理
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"
+          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/CustomIP.yaml"
           path: ./ruleset/CustomIPSelfuse.yaml
           interval: 86400
 
