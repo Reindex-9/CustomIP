@@ -89,6 +89,21 @@ parsers: # array
             - 🌐 大洋洲 
             - 🌐 冷门国家    
 
+        - name: 🌎️ IPmodify #改IP地址
+          type: select
+          proxies:
+            - DIRECT
+            - ✈️ OutSide
+            - 📶 Auto
+            - ✔️ PROXY
+            - 🚩 CustomIP 
+            - 🌐 北美
+            - 🌐 欧洲
+            - 🌐 港澳台 
+            - 🌐 日韩新 
+            - 🌐 大洋洲 
+            - 🌐 冷门国家    
+
         - name: ♾️ Final #终极策略/黑白名单模式
           type: select
           proxies:
@@ -235,14 +250,15 @@ parsers: # array
         - RULE-SET,OpenAI,🚩 CustomIP
         - RULE-SET,Bing,🚩 CustomIP
         - RULE-SET,Google,🚩 CustomIP
-
+        
+        - RULE-SET,CustomIPSelfuse,🚩 CustomIP
         - RULE-SET,ProxySelfuse,✈️ OutSide
-        - RULE-SET,CNSelfuse,🎯 Direct
+        - RULE-SET,DirectSelfuse,🎯 Direct
 
         - RULE-SET,Microsoft,🔘 Option
         - RULE-SET,Apple,🔘 Option #若想icloud和apple使用不同的策略，将icloud规则集顺序放在apple上一位即可
-        - RULE-SET,RedBook,🔘 Option
-
+        - RULE-SET,RedBook,🌎️ IPmodify
+        
         - PROCESS-NAME,steam.exe,🎯 Direct # steam下载、上传相关
         - PROCESS-NAME,steamservice.exe,🎯 Direct # steam处理installscripts iirc（安装DX、VS可再发行版等）
         - PROCESS-NAME,Stardew Valley.exe,🎯 Direct # 星露谷物语
@@ -342,21 +358,28 @@ parsers: # array
           path: ./ruleset/Google.yaml
           interval: 86400
 
+        CustomIPSelfuse: # 自用干净ip代理
+          type: http
+          behavior: classical
+          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"
+          path: ./ruleset/CustomIPSelfuse.yaml
+          interval: 86400
+
         # ✈️✈️✈️✈️✈️✈️
         ProxySelfuse: # 自用翻墙 ✈️
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/ProxySelfuse.yaml"
+          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/Proxy.yaml"
           path: ./ruleset/ProxySelfuse.yaml
           interval: 86400
 
 
         # 🎯🎯🎯🎯🎯🎯
-        CNSelfuse: # 自用直连 🎯
+        DirectSelfuse: # 自用直连 🎯
           type: http
           behavior: classical
-          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/CNSelfuse.yaml"
-          path: ./ruleset/CNSelfuse.yaml
+          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/Direct.yaml"
+          path: ./ruleset/DirectSelfuse.yaml
           interval: 86400
 
         # 🔘🔘🔘🔘🔘🔘
@@ -374,7 +397,7 @@ parsers: # array
           path: ./ruleset/Microsoft.yaml
           interval: 86400       
           
-        RedBook: # 小红书 🔘
+        RedBook: # 小红书 🌎️
           type: http
           behavior: classical
           url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.yaml"
