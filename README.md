@@ -3,7 +3,9 @@ emoji大全：https://emojixd.com/
 注：直接修改本地设置，才能实时更改分流结果；修改github规则集会有延迟
 
 # App配置下载
-Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/Shodowrocket_MyConfig.conf
+Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Shodowrocket_MyConfig.conf
+QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/QuantumulX_MyConfig.conf  
+注：raw链下载配置可能失败，换成镜像站地址即可。  
 
 # ACL4SSR——订阅链接转换  
 自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
