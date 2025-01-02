@@ -246,6 +246,7 @@ parsers: # array
         - RULE-SET,BanProgramAD,🚫 Reject
         - RULE-SET,BanEasyListChina,🚫 Reject
         - RULE-SET,Hijacking,🚫 Reject
+        - RULE-SET,RejectSelfuse,🚫 Reject
         
         - RULE-SET,OpenAI,🚩 CustomIP
         - RULE-SET,Bing,🚩 CustomIP
@@ -334,6 +335,13 @@ parsers: # array
           behavior: classical
           url: "https://raw.githubusercontents.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.yaml"
           path: ./ruleset/Hijacking.yaml
+          interval: 86400
+
+        RejectSelfuse: # 自用禁止访问 🚫
+          type: http
+          behavior: classical
+          url: "https://raw.githubusercontents.com/Reindex-9/CustomIP/main/ruleset/Reject.yaml"
+          path: ./ruleset/RejectSelfuse.yaml
           interval: 86400
 
         # 🚩🚩🚩🚩🚩🚩 
