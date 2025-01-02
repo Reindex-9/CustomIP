@@ -1,4 +1,5 @@
 payload:
-# 最后更新：2024-1-2
-# TOTAL: 1 ； DOMAIN-SUFFIX: 1
+# 最后更新：2024-1-3
+# TOTAL: 2 ； DOMAIN-SUFFIX: 2
   - DOMAIN-SUFFIX,adobe.com
+  - DOMAIN-SUFFIX,adobe.io
