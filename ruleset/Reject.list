@@ -1,0 +1,5 @@
+# 最后更新：2025-01-03
+# TOTAL: 1 ； DOMAIN-SUFFIX: 1 ；
+
+# 禁止联网权限
+DOMAIN-SUFFIX,adobe.com
