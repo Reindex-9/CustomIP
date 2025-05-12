@@ -189,14 +189,15 @@ parsers: # array
 
         # 向指定分组的第一个位置前插入添加订阅中的节点名，并按相应正则表达式过滤
         # ↓匹配包含美国|美國|United States|US中至少一个且不包含2x|3x|5x|10x中任何一个的节点
-        # ^(?=.*(?:美国|美國|United States|US))(?!.*(?:2x|3x|5x|10x)).*$    ^(?=.*(?:))(?!.*(?:)).*$    
+        # ^(?=.*(?:美国|美國|United States|US))(?!.*(?:2x|3x|5x|10x)).*$    
+        # ^(?=.*(?:要包含的内容))(?!.*(?:要排除的内容)).*$  中间以|分隔    
 
-        - proxy-groups.🌐 北美.proxies.0+[]proxyNames|^(?=.*(?:美国|美國|United States|US|us|加拿大|Canada))(?!.*(?:2x|3x|5x|10x)).*$
-        - proxy-groups.🌐 欧洲.proxies.0+[]proxyNames|^(?=.*(?:德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利))(?!.*(?:2x|3x|5x|10x)).*$
-        - proxy-groups.🌐 港澳台.proxies.0+[]proxyNames|^(?=.*(?:香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan))(?!.*(?:2x|3x|5x|10x)).*$
-        - proxy-groups.🌐 日韩新.proxies.0+[]proxyNames|^(?=.*(?:日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore))(?!.*(?:2x|3x|5x|10x)).*$
+        - proxy-groups.🌐 北美.proxies.0+[]proxyNames|^(?=.*(?:美国|美國|United States|US|us|加拿大|Canada))(?!.*(?:5x|10x)).*$
+        - proxy-groups.🌐 欧洲.proxies.0+[]proxyNames|^(?=.*(?:德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利))(?!.*(?:5x|10x)).*$
+        - proxy-groups.🌐 港澳台.proxies.0+[]proxyNames|^(?=.*(?:香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan))(?!.*(?:5x|10x)).*$
+        - proxy-groups.🌐 日韩新.proxies.0+[]proxyNames|^(?=.*(?:日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore))(?!.*(?:5x|10x)).*$
         - proxy-groups.🌐 大洋洲.proxies.0+[]proxyNames|^(?=.*(?:新西兰|澳大利亚|澳大利亞|Australia))(?!.*(?:2x|3x|5x|10x)).*$
-        - proxy-groups.🌐 冷门国家.proxies.0+[]proxyNames|^((?!2x|3x|5x|10x|剩余|套餐|到期|美国|美國|United States|US|us|加拿大|Canada|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|京港|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore|新西兰|澳大利亚|澳大利亞|Australia).)*$
+        - proxy-groups.🌐 冷门国家.proxies.0+[]proxyNames|^((?!剩余|套餐|到期|更新|美国|美國|United States|US|us|加拿大|Canada|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|京港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|TW|Taiwan|日本|川日|沪日|深日|京日|JP|Japan|韩|韓|KR|Korea|KOR|新加坡|狮城|SG|Singapore|新西兰|澳大利亚|澳大利亞|Australia).)*$
         # 冷门国家，过滤其他所有国家节点
         # 若不需排除，可直接用proxy-groups.策略组名.proxies.0+[]proxyNames|美国|美國|United States|US|us|加拿大|Canada
 
@@ -260,11 +261,14 @@ parsers: # array
         - RULE-SET,Apple,🔘 Option #若想icloud和apple使用不同的策略，将icloud规则集顺序放在apple上一位即可
         - RULE-SET,RedBook,🌎️ IPmodify
         
-       - PROCESS-NAME,steamwebhelper.exe,🎮 Game # steam商店、好友界面
+        - DOMAIN-SUFFIX,tianqi.com,✈️ OutSide
+
+        - PROCESS-NAME,steamwebhelper.exe,🎮 Game # steam商店、好友界面
         - DOMAIN-SUFFIX,steamcommunity.com,🎮 Game # steam社区
         - PROCESS-NAME,steam.exe,🎯 Direct # steam下载、上传相关
         - PROCESS-NAME,steamservice.exe,🎯 Direct # steam处理installscripts iirc（安装DX、VS可再发行版等）
         - PROCESS-NAME,Stardew Valley.exe,🎯 Direct # 星露谷物语
+
         - RULE-SET,Game,🎮 Game
 
         - RULE-SET,ChinaMedia,🎯 Direct
