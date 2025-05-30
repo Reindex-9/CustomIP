@@ -7,7 +7,7 @@ QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/mai
 注：raw链下载配置可能失败，换成镜像站地址即可。  
 
 # ACL4SSR——订阅链接转换  
-自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
+自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSRrules.ini  
 自定义配置镜像链接：https://raw.gitmirror.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
   
