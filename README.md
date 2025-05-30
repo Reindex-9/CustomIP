@@ -9,12 +9,14 @@ QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/mai
 # ACL4SSR——订阅链接转换  
 自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSRrules.ini  
 自定义配置镜像链接：https://raw.gitmirror.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
-参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
-  
+注：github代码修改后因为缓存不会立即更新，修改文件名可以立即更新  
+
 ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
+使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
+> 参考：https://github.com/Wzieee/custom-network-rules
+> 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
+
   
-> 原地址：https://github.com/Wzieee/custom-network-rules  
-> 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
 # 规则匹配参数
 - 域名匹配
   - DOMAIN-KEYWORD：域名关键字匹配，通常采用主机名，但只要域名中含有特定的关键字，就会被这个规则匹配
