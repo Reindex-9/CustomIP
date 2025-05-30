@@ -11,7 +11,6 @@ QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/mai
 自定义配置镜像链接：https://raw.gitmirror.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
   
-つつの订阅转换：https://m.sub.tsutsu.one/  
 ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
   
 > 原地址：https://github.com/Wzieee/custom-network-rules  
