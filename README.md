@@ -1,5 +1,5 @@
-网络搬运后修改留档自用。  
-注：直接修改本地设置，才能实时更改分流结果；修改github规则集会有延迟
+参考网络配置修改留档自用。  
+注：直接修改本地设置，才能实时更改分流结果；github代码修改后会延迟更新，修改文件名可以立即更新
 
 # App配置下载
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
@@ -9,7 +9,6 @@ QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/mai
 # ACL4SSR——订阅链接转换  
 自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSRrules.ini  
 自定义配置镜像链接：https://raw.gitmirror.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
-注：github代码修改后因为缓存不会立即更新，修改文件名可以立即更新  
 
 ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
