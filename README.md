@@ -4,6 +4,8 @@
 # App配置下载
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
 QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/QuantumulX_MyConfig.conf  
+> 参考配置：
+>   - ClashVerge：https://gist.github.com/dahaha-365/0b8beb613f8d1ee656fe1f21e1a07959  
 注：raw链下载配置可能失败，换成镜像站地址即可。  
 
 # ACL4SSR——订阅链接转换  
@@ -12,7 +14,7 @@ QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/mai
 
 ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
-> 参考：https://github.com/Wzieee/custom-network-rules
+> 参考：https://github.com/Wzieee/custom-network-rules  
 > 参考配置：https://github.com/ACL4SSR/ACL4SSR/tree/master/Clash/config  
 
   
