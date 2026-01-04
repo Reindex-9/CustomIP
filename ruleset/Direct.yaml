@@ -1,8 +1,69 @@
 payload:
-# 杂（最后更新：2025-5-26）
-# TOTAL: 2 ； DOMAIN-KEYWORD: 1 ; DOMAIN-SUFFIX: 3 ; DOMAIN : 1
+# 最后更新：2026-1-5
+# TOTAL: 43 ; DOMAIN-SUFFIX: 5 ; DOMAIN: 34 ; IP-CIDR: 4
   - DOMAIN-KEYWORD,axutongxue
   - DOMAIN-SUFFIX,sylus.top
+
+# 游戏及本地网络
+  # Steam中国大陆地区游戏下载
   - DOMAIN-SUFFIX,steamserver.net
   - DOMAIN,steamcdn-a.akamaihd.net
   - DOMAIN-SUFFIX,cm.steampowered.com
+  - DOMAIN,steampipe.steamcontent.tnkjmec.com
+  - DOMAIN,st.dl.eccdnx.com
+  - DOMAIN,st.dl.bscstorage.net
+  - DOMAIN,st.dl.pinyuncloud.com
+  - DOMAIN,dl.steam.clngaa.com
+  - DOMAIN,cdn.mileweb.cs.steampowered.com.8686c.com
+  - DOMAIN,cdn-ws.content.steamchina.com
+  - DOMAIN,cdn-qc.content.steamchina.com
+  - DOMAIN,cdn-ali.content.steamchina.com
+
+  # Steam非中国大陆地区游戏下载/社区实况直播
+  - DOMAIN-SUFFIX,steamcontent.com
+
+  # Steam国际创意工坊下载CDN
+  - DOMAIN,steamusercontent-a.akamaihd.net
+
+  # Origin游戏下载
+  - DOMAIN,ssl-lvlt.cdn.ea.com
+  - DOMAIN,origin-a.akamaihd.net
+
+  # Battle.net战网中国大陆地区游戏下载
+  - DOMAIN,client05.pdl.wow.battlenet.com.cn
+  - DOMAIN,client02.pdl.wow.battlenet.com.cn
+
+  # Battle.net战网非中国大陆地区游戏下载
+  - DOMAIN,level3.blizzard.com
+  - DOMAIN,blzddist1-a.akamaihd.net
+  - DOMAIN,blzddistkr1-a.akamaihd.net
+  - DOMAIN,kr.cdn.blizzard.com
+  - DOMAIN,us.cdn.blizzard.com
+  - DOMAIN,eu.cdn.blizzard.com
+
+  # Epic Games中国大陆地区游戏下载
+  - DOMAIN,epicgames-download1-1251447533.file.myqcloud.com
+
+  # Epic Games非中国大陆地区游戏下载
+  - DOMAIN,epicgames-download1.akamaized.net
+  - DOMAIN,download.epicgames.com
+  - DOMAIN,download2.epicgames.com
+  - DOMAIN,download3.epicgames.com
+  - DOMAIN,download4.epicgames.com
+
+  # Rockstar Launcher客户端更新/游戏更新/游戏下载
+  - DOMAIN,gamedownloads-rockstargames-com.akamaized.net
+
+  # GOG中国大陆游戏下载/客户端更新
+  - DOMAIN,gog.qtlglb.com
+
+  # GOG非中国大陆游戏下载/客户端更新
+  - DOMAIN,cdn.gog.com
+  - DOMAIN,galaxy-client-update.gog.com
+
+  # 本地网络和保留地址
+  - DOMAIN-SUFFIX,localhost
+  - IP-CIDR,127.0.0.0/8,no-resolve
+  - IP-CIDR,10.0.0.0/8,no-resolve
+  - IP-CIDR,172.16.0.0/12,no-resolve
+  - IP-CIDR,192.168.0.0/16,no-resolve
