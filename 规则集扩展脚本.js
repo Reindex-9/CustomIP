@@ -1,3 +1,4 @@
+// JavaScript 预处理脚本，可用于ClashVerge、FIClash等软件，本文件为分流规则集扩展
 function main(config) {
   if (!config.proxies || config.proxies.length === 0) return config;
 
