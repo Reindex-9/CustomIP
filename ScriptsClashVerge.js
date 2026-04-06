@@ -169,7 +169,7 @@ function main(config) {
     }
   });
 
-  // 4. 重写 rule-providers (规则提供者)
+  // 4. 重写 rule-providers (规则集)
   const rawRulesets = [
     ["🚩 CustomIP", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Direct.list"],
