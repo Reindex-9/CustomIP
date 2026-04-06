@@ -124,6 +124,11 @@ function main(config) {
       type: "select",
       proxies: getProxiesByRegex("^(?=.*(?:剩余|套餐|到期|流量|更新|网址|重置|官网)).*$")
     },
+    {
+      name: "♾️ Final",
+      type: "select",
+      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+    },
     // 下载专用组，默认直连防偷跑，也可手动切换大流量节点
     {
       name: "📥 Download",
@@ -144,11 +149,6 @@ function main(config) {
       name: "🎮 Game",
       type: "select",
       proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新"]
-    },
-    {
-      name: "♾️ Final",
-      type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
     },
     {
       name: "🎯 Direct",
