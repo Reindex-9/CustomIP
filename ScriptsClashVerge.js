@@ -38,7 +38,7 @@ function main(config) {
   // =========================================================================
   // 👇 注入链式代理前置组与静态节点
   // =========================================================================
-  const staticIPName = "🏠 专属静态住宅IP";
+  const staticIPName = "🏠 专属静态IP";
   const frontSelectorName = "🪢 前置节点"; // 用于手动选择链式代理的前置策略组
 
   // 把需要拨号的静态节点注入到底层 proxies 列表里
@@ -85,27 +85,27 @@ function main(config) {
     {
       name: "🇺🇸 美国",
       type: "select",
-      proxies: getProxiesByRegex("^(?=.*(?:美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us)).*$").concat(["DIRECT"])
+      proxies: getProxiesByRegex("^(?!.*静态IP)(?=.*(?:美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us)).*$").concat(["DIRECT"])
     },
     {
       name: "🌐 欧洲",
       type: "select",
-      proxies: getProxiesByRegex("^(?=.*(?:德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利)).*$").concat(["DIRECT"])
+      proxies: getProxiesByRegex("^(?!.*静态IP)(?=.*(?:德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利)).*$").concat(["DIRECT"])
     },
     {
       name: "🌐 港澳台",
       type: "select",
-      proxies: getProxiesByRegex("^(?=.*(?:香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan)).*$").concat(["DIRECT"])
+      proxies: getProxiesByRegex("^(?!.*静态IP)(?=.*(?:香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan)).*$").concat(["DIRECT"])
     },
     {
       name: "🌐 日韩新",
       type: "select",
-      proxies: getProxiesByRegex("^(?=.*(?:日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore)).*$").concat(["DIRECT"])
+      proxies: getProxiesByRegex("^(?!.*静态IP)(?=.*(?:日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore)).*$").concat(["DIRECT"])
     },
     {
       name: "🌐 冷门国家",
       type: "select",
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态住宅IP|美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan|日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore).)*$").concat(["DIRECT"])
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态IP|美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan|日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore).)*$").concat(["DIRECT"])
     },
     {
       name: frontSelectorName,    // 前置节点手动选择组
@@ -118,12 +118,12 @@ function main(config) {
       url: "http://www.gstatic.com/generate_204",
       interval: 300,
       tolerance: 50,
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
     },
         {
       name: "🗺️ AllNodes",       // 全部节点，手动选择
       type: "select",
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
     },
     {
       name: "🔖 Info",
