@@ -1,5 +1,6 @@
 参考网络配置修改留档自用。  
 注：直接修改本地设置，才能实时更改分流结果；github代码修改后会延迟更新，修改文件名可以立即更新
+已将规则集链接中的`raw.githubusercontent.com`替换为镜像站的`raw.gitmirror.com`。
 
 # App配置下载
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
@@ -40,15 +41,9 @@ ACL4SSR订阅转换：https://acl4ssr-sub.github.io/
 - MATCH：全匹配
   
 # 特定App
-## Clash——paser处理  
-### 策略组
-- **模式**  
-**CustomIP**（根据地区切换节点）；**Auto**（自动测速）；**OutSide**（国外网站默认）；**Option**（自选模式）；**PROXY**（选择节点）；**Reject**（广告拦截；反劫持）；**Final**（黑白名单模式：未命中规则默认直连/代理）。  
-- **地区分类**  
-北美，欧洲，港澳台，日韩新，大洋洲，冷门国家  
-  
-> 原地址：https://github.com/Fndroid/clash_for_windows_pkg/issues/2193  
-> 使用方法：Clash-设置（Settings）-配置（Profiles）-配置文件预处理（Pasers）  
+## ClashVerge
+采用Script覆写。
+适用于ClashVerge、FIClash等。
 
 ## Shadowrocket
 参考配置：https://johnshall.github.io/Shadowrocket-ADBlock-Rules-Forever/lazy_group.conf
