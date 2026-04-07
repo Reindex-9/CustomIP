@@ -77,7 +77,7 @@ function main(config) {
       proxies: [staticIPName, "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     {
-      name: "✈️ Proxy",
+      name: "✈️ Overseas",
       type: "select",
       proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
@@ -133,28 +133,28 @@ function main(config) {
     {
       name: "♾️ Final",
       type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+      proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     {
       name: "🌎️ IPmodify",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+      proxies: ["DIRECT", "✈️ Overseas", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     {
       name: "🔘 Option",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+      proxies: ["DIRECT", "✈️ Overseas", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     {
       name: "🎮 Game",
       type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
+      proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
     },
     // 下载专用组，默认直连防偷跑，也可手动切换大流量节点
     {
       name: "📥 Download",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
+      proxies: ["DIRECT", "✈️ Overseas", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
     },
     {
       name: "🎯 Direct",
@@ -179,9 +179,9 @@ function main(config) {
   const rawRulesets = [
     ["🚩 CustomIP", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Direct.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Proxy.list"],
+    ["✈️ Overseas", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Proxy.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/wlxuf/add_rule/main/direct-amend.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/wlxuf/add_rule/main/proxy-amend.list"],
+    ["✈️ Overseas", "https://raw.githubusercontent.com/wlxuf/add_rule/main/proxy-amend.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list"],
     ["REJECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"],
@@ -197,10 +197,10 @@ function main(config) {
     ["🌎️ IPmodify", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/HoYoverse/HoYoverse.list"],
     ["🎮 Game", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list"],
+    ["✈️ Overseas", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list"],
     ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"],
+    ["✈️ Overseas", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list"],
+    ["✈️ Overseas", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"],
     ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list"],
     ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list"],
     ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Download.list"],
