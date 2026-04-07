@@ -177,34 +177,34 @@ function main(config) {
 
   // 4. 重写 rule-providers (规则集)
   const rawRulesets = [
-    ["🚩 CustomIP", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"],
-    ["🎯 Direct", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/Direct.list"],
-    ["✈️ Proxy", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/Proxy.list"],
-    ["🎯 Direct", "https://raw.gitmirror.com/wlxuf/add_rule/main/direct-amend.list"],
-    ["✈️ Proxy", "https://raw.gitmirror.com/wlxuf/add_rule/main/proxy-amend.list"],
-    ["🎯 Direct", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list"],
-    ["🎯 Direct", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list"],
-    ["REJECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"],
-    ["🚫 Reject", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list"],
-    ["🚫 Reject", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/BanEasyListChina.list"],
-    ["REJECT", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.list"],
-    ["🚫 Reject", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/Reject.list"],
-    ["🚩 CustomIP", "https://raw.gitmirror.com/Reindex-9/CustomIP/refs/heads/main/ruleset/ruleset/AI.list"],
-    ["🚩 CustomIP", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list"],
-    ["🚩 CustomIP", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list"],
-    ["🔘 Option", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list"],
-    ["🔘 Option", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list"],
-    ["🌎️ IPmodify", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list"],
-    ["🎯 Direct", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/HoYoverse/HoYoverse.list"],
-    ["🎮 Game", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.list"],
-    ["✈️ Proxy", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list"],
-    ["🎯 Direct", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list"],
-    ["✈️ Proxy", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list"],
-    ["✈️ Proxy", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"],
-    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list"],
-    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list"],
-    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/Download.list"],
-    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaIp.list"]
+    ["🚩 CustomIP", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"],
+    ["🎯 Direct", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Direct.list"],
+    ["✈️ Proxy", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Proxy.list"],
+    ["🎯 Direct", "https://raw.githubusercontent.com/wlxuf/add_rule/main/direct-amend.list"],
+    ["✈️ Proxy", "https://raw.githubusercontent.com/wlxuf/add_rule/main/proxy-amend.list"],
+    ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list"],
+    ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list"],
+    ["REJECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"],
+    ["🚫 Reject", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list"],
+    ["🚫 Reject", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanEasyListChina.list"],
+    ["REJECT", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.list"],
+    ["🚫 Reject", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Reject.list"],
+    ["🚩 CustomIP", "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ruleset/ruleset/AI.list"],
+    ["🚩 CustomIP", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list"],
+    ["🚩 CustomIP", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list"],
+    ["🔘 Option", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list"],
+    ["🔘 Option", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list"],
+    ["🌎️ IPmodify", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list"],
+    ["🎯 Direct", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/HoYoverse/HoYoverse.list"],
+    ["🎮 Game", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.list"],
+    ["✈️ Proxy", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list"],
+    ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list"],
+    ["✈️ Proxy", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list"],
+    ["✈️ Proxy", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"],
+    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list"],
+    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list"],
+    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Download.list"],
+    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaIp.list"]
   ];
 
   config["rule-providers"] = {};
@@ -232,6 +232,7 @@ function main(config) {
   // 5. 追加末尾特殊规则
   customRules.unshift("AND,((NETWORK,UDP),(DST-PORT,443)),REJECT");   // 把拒绝 QUIC (UDP 443) 的规则强制插入到所有规则的最前面
   customRules.push("GEOIP,CN,🎯 Direct"); 
+  customRules.push("MATCH,♾️ Final");
 
   // 将构造好的规则覆盖原有系统规则
   config.rules = customRules;
