@@ -1,6 +1,6 @@
 参考网络配置修改留档自用。  
 注：直接修改本地设置，才能实时更改分流结果；github代码修改后会延迟更新，修改文件名可以立即更新。  
-已将规则集链接中的`raw.githubusercontent.com`替换为镜像站的`raw.gitmirror.com`。
+由于镜像站点不稳定，规则集暂时使用 GitHub 文件的原始链接`https://raw.githubusercontent.com/...` 
 
 # App配置下载
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
