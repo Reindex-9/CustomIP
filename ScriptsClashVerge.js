@@ -38,22 +38,22 @@ function main(config) {
   // =========================================================================
   // 👇 注入链式代理前置组与静态节点
   // =========================================================================
-  const staticUkName = "🏠 专属静态住宅IP";
-  const allNodesPoolName = "📶 全部节点";
+  const staticIPName = "🏠 专属静态住宅IP";
+  const frontSelectorName = "🪢 前置节点"; // 用于手动选择链式代理的前置策略组
 
   // 获取当前所有带有emoji的普通节点（用作前置池），并排除可能重复添加的静态节点本身
-  const frontNodes = config.proxies.map(p => p.name).filter(name => name !== staticUkName);
+  const frontNodes = config.proxies.map(p => p.name).filter(name => name !== staticIPName);
 
   // 把需要拨号的静态节点注入到底层 proxies 列表里
   config.proxies.push({
-    name: staticUkName,
+    name: staticIPName,
     type: "socks5",      // ⚠️ 需要修改，填节点类型，如vmess/ss/https/socks5
     server: "服务器IP或域名",  // ⚠️ 需要修改，填服务器IP
     port: 443,                            // ⚠️ 需要修改，填端口号
     username: "用户名",      // ⚠️ 需要修改，填用户名
     password: "密码",        // ⚠️ 需要修改，填密码
     cipher: "auto",
-    "dialer-proxy": allNodesPoolName    // 让此节点通过前置节点连接
+    "dialer-proxy": frontSelectorName    // 让此节点通过前置节点连接
   });
   //  【代理协议鉴权字段说明】
   // 根据节点实际协议 (type) 修改上述字段：
@@ -76,13 +76,13 @@ function main(config) {
     {
       name: "🚩 CustomIP",
       type: "select",
-      // 👇 把静态IP放进了 CustomIP 组的第一个
-      proxies: [staticUkName, "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+      // 👇 把静态IP放进 CustomIP 组的第一个
+      proxies: [staticIPName, "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
     },
     {
       name: "✈️ Proxy",
       type: "select",
-      proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+      proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
     },
     // 美国（严格限定只匹配美国节点，用于部分IP限制严格的）
     {
@@ -110,13 +110,22 @@ function main(config) {
       type: "select",
       proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|静态住宅IP|美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan|日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore).)*$").concat(["DIRECT"])
     },
-    // 📶 全部节点，自动测速，可用于为静态IP挑选最快机场节点
     {
-      name: allNodesPoolName,
+      name: frontSelectorName,    // 前置节点手动选择组
+      type: "select",
+      proxies: ["📶 Auto", "🗺️ 全部节点", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+    },
+    {
+      name: "📶 Auto",       // 📶 全部节点，自动测速，可用于为静态IP挑选最快机场节点
       type: "url-test",
       url: "http://www.gstatic.com/generate_204",
       interval: 300,
       tolerance: 50,
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
+    },
+        {
+      name: "🗺️ 全部节点",       // 全部节点，手动选择
+      type: "select",
       proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
     },
     {
@@ -127,28 +136,28 @@ function main(config) {
     {
       name: "♾️ Final",
       type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
     },
     // 下载专用组，默认直连防偷跑，也可手动切换大流量节点
     {
       name: "📥 Download",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新"]
+      proxies: ["DIRECT", "✈️ Proxy", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ 全部节点"]
     },
     {
       name: "🌎️ IPmodify",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
     },
     {
       name: "🔘 Option",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
     },
     {
       name: "🎮 Game",
       type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新"]
+      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ 全部节点"]
     },
     {
       name: "🎯 Direct",
