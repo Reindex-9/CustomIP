@@ -10,9 +10,10 @@ QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/mai
 
 注：raw链下载配置可能失败，换成镜像站地址即可。  
 
-# ACL4SSR——订阅链接转换  
+# ACL4SSR订阅链接转换  
 自定义配置raw链：https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ACL4SSRrules.ini  
 自定义配置镜像链接：https://raw.gitmirror.com/Reindex-9/CustomIP/main/ACL4SSR_rules.ini  
+注：订阅转换可能丢失部分协议较新的节点。  
 
 ACL4SSR订阅转换：https://acl4ssr-sub.github.io/  
 使用方法：“ACL4SSR在线订阅转换”，点击“进阶模式”，导入订阅链接，远程配置把这个仓库里面的“.ini”结尾的文件地址填上去，转换导入clash即可。  
