@@ -41,9 +41,6 @@ function main(config) {
   const staticIPName = "🏠 专属静态住宅IP";
   const frontSelectorName = "🪢 前置节点"; // 用于手动选择链式代理的前置策略组
 
-  // 获取当前所有带有emoji的普通节点（用作前置池），并排除可能重复添加的静态节点本身
-  const frontNodes = config.proxies.map(p => p.name).filter(name => name !== staticIPName);
-
   // 把需要拨号的静态节点注入到底层 proxies 列表里
   config.proxies.push({
     name: staticIPName,
@@ -77,12 +74,12 @@ function main(config) {
       name: "🚩 CustomIP",
       type: "select",
       // 👇 把静态IP放进 CustomIP 组的第一个
-      proxies: [staticIPName, "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
+      proxies: [staticIPName, "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     {
       name: "✈️ Proxy",
       type: "select",
-      proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
+      proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     // 美国（严格限定只匹配美国节点，用于部分IP限制严格的）
     {
@@ -108,12 +105,12 @@ function main(config) {
     {
       name: "🌐 冷门国家",
       type: "select",
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|静态住宅IP|美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan|日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore).)*$").concat(["DIRECT"])
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态住宅IP|美国|美國|凤凰城|洛杉矶|西雅图|芝加哥|纽约|俄勒冈|弗吉尼亚|沪美|United States|US|us|德国|德國|Germany|DE|Ger|英国|英國|UK|uk|法国|法國|France|FR|意大利|香港|深港|沪港|京港|港|HK|Hong Kong|澳门|澳門|Macau|台湾|台灣|台北|台中|新北|彰化|TW|Taiwan|日本|东京|大阪|京日|苏日|沪日|上日|深日|广日|川日|JP|Japan|韩|韓|首尔|春川|KR|Korea|KOR|新加坡|狮城|SG|Singapore).)*$").concat(["DIRECT"])
     },
     {
       name: frontSelectorName,    // 前置节点手动选择组
       type: "select",
-      proxies: ["📶 Auto", "🗺️ 全部节点", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+      proxies: ["📶 Auto", "🗺️ AllNodes", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
     },
     {
       name: "📶 Auto",       // 📶 全部节点，自动测速，可用于为静态IP挑选最快机场节点
@@ -121,43 +118,43 @@ function main(config) {
       url: "http://www.gstatic.com/generate_204",
       interval: 300,
       tolerance: 50,
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
     },
         {
-      name: "🗺️ 全部节点",       // 全部节点，手动选择
+      name: "🗺️ AllNodes",       // 全部节点，手动选择
       type: "select",
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
+      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态住宅IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
     },
     {
       name: "🔖 Info",
       type: "select",
-      proxies: getProxiesByRegex("^(?=.*(?:剩余|套餐|到期|流量|更新|网址|重置|官网)).*$")
+      proxies: getProxiesByRegex("^(?=.*(?:剩余|套餐|到期|流量|更新|网址|重置|官网|防失联)).*$")
     },
     {
       name: "♾️ Final",
       type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
+      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+    },
+    {
+      name: "🌎️ IPmodify",
+      type: "select",
+      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+    },
+    {
+      name: "🔘 Option",
+      type: "select",
+      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+    },
+    {
+      name: "🎮 Game",
+      type: "select",
+      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
     },
     // 下载专用组，默认直连防偷跑，也可手动切换大流量节点
     {
       name: "📥 Download",
       type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ 全部节点"]
-    },
-    {
-      name: "🌎️ IPmodify",
-      type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
-    },
-    {
-      name: "🔘 Option",
-      type: "select",
-      proxies: ["DIRECT", "✈️ Proxy", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ 全部节点"]
-    },
-    {
-      name: "🎮 Game",
-      type: "select",
-      proxies: ["✈️ Proxy", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ 全部节点"]
+      proxies: ["DIRECT", "✈️ Proxy", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
     },
     {
       name: "🎯 Direct",
@@ -180,34 +177,34 @@ function main(config) {
 
   // 4. 重写 rule-providers (规则集)
   const rawRulesets = [
-    ["🚩 CustomIP", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"],
-    ["🎯 Direct", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Direct.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Proxy.list"],
-    ["🎯 Direct", "https://raw.githubusercontent.com/wlxuf/add_rule/main/direct-amend.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/wlxuf/add_rule/main/proxy-amend.list"],
-    ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list"],
-    ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list"],
-    ["REJECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"],
-    ["🚫 Reject", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list"],
-    ["🚫 Reject", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanEasyListChina.list"],
-    ["REJECT", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.list"],
-    ["🚫 Reject", "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Reject.list"],
-    ["🚩 CustomIP", "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ruleset/ruleset/AI.list"],
-    ["🚩 CustomIP", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list"],
-    ["🚩 CustomIP", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list"],
-    ["🔘 Option", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list"],
-    ["🔘 Option", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list"],
-    ["🌎️ IPmodify", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list"],
-    ["🎯 Direct", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/HoYoverse/HoYoverse.list"],
-    ["🎮 Game", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list"],
-    ["🎯 Direct", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list"],
-    ["✈️ Proxy", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"],
-    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list"],
-    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list"],
-    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Download.list"],
-    ["DIRECT", "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaIp.list"]
+    ["🚩 CustomIP", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list"],
+    ["🎯 Direct", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/Direct.list"],
+    ["✈️ Proxy", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/Proxy.list"],
+    ["🎯 Direct", "https://raw.gitmirror.com/wlxuf/add_rule/main/direct-amend.list"],
+    ["✈️ Proxy", "https://raw.gitmirror.com/wlxuf/add_rule/main/proxy-amend.list"],
+    ["🎯 Direct", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list"],
+    ["🎯 Direct", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list"],
+    ["REJECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"],
+    ["🚫 Reject", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list"],
+    ["🚫 Reject", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/BanEasyListChina.list"],
+    ["REJECT", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.list"],
+    ["🚫 Reject", "https://raw.gitmirror.com/Reindex-9/CustomIP/main/ruleset/Reject.list"],
+    ["🚩 CustomIP", "https://raw.gitmirror.com/Reindex-9/CustomIP/refs/heads/main/ruleset/ruleset/AI.list"],
+    ["🚩 CustomIP", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list"],
+    ["🚩 CustomIP", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list"],
+    ["🔘 Option", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list"],
+    ["🔘 Option", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list"],
+    ["🌎️ IPmodify", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list"],
+    ["🎯 Direct", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/HoYoverse/HoYoverse.list"],
+    ["🎮 Game", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Game/Game.list"],
+    ["✈️ Proxy", "https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.list"],
+    ["🎯 Direct", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaMedia.list"],
+    ["✈️ Proxy", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ProxyMedia.list"],
+    ["✈️ Proxy", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"],
+    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list"],
+    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list"],
+    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/Download.list"],
+    ["DIRECT", "https://raw.gitmirror.com/ACL4SSR/ACL4SSR/master/Clash/ChinaIp.list"]
   ];
 
   config["rule-providers"] = {};
@@ -234,8 +231,7 @@ function main(config) {
 
   // 5. 追加末尾特殊规则
   customRules.unshift("AND,((NETWORK,UDP),(DST-PORT,443)),REJECT");   // 把拒绝 QUIC (UDP 443) 的规则强制插入到所有规则的最前面
-  customRules.push("GEOIP,CN,🎯 Direct,no-resolve");
-  customRules.push("MATCH,♾️ Final");
+  customRules.push("GEOIP,CN,🎯 Direct"); 
 
   // 将构造好的规则覆盖原有系统规则
   config.rules = customRules;
