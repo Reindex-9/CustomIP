@@ -104,7 +104,7 @@ function main(config) {
   // 2. 获取加上 Emoji 之后的订阅节点名称
   const proxyNames = config.proxies.map(p => p.name);
 
-  // 辅助函数：根据国家匹配函数筛选节点
+  // 定义判断函数，筛选节点
   function getProxiesByMatcher(matcher) {
     return proxyNames.filter(
       name => name !== staticIPName && matcher(name)    //排除静态 IP
@@ -127,16 +127,19 @@ function main(config) {
     country.kr(n) ||
     country.sg(n);
 
-  const isMainRegion = n =>     //判断节点是否属于主流节点
+  const isMainRegion = n =>     //判断主流节点
     country.us(n) ||
     isEurope(n) ||
     isGreaterAsia(n) ||
     isEastAsia(n);
 
-  const isInfoNode = n =>       //排除流量、到期、音乐、游戏等信息节点
+  const isExcludedNode = n =>       //判断需要从普通节点列表中排除的节点，包括流量信息、静态 IP、音乐、游戏等
     /剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game/i.test(n);
 
-  // 3.  proxy-groups (策略组)
+  const isTrafficInfoNode = n =>    // 判断流量、套餐、到期等纯信息节点
+    /剩余|套餐|到期|流量|更新|网址|重置|官网|防失联/i.test(n);
+  
+    // 3.  proxy-groups (策略组)
   config["proxy-groups"] = [
     {
       name: "🚩 CustomIP",
@@ -149,13 +152,13 @@ function main(config) {
         "🌐 港澳台",
         "🌐 日韩新",
         "🌐 冷门国家",
-        "🗺️ AllNodes"
+        "📶 Auto"
       ]
     },
     {
       name: "✈️ Overseas",
       type: "select",
-      proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+      proxies: ["🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "📶 Auto"]
     },
     {
       name: "🇺🇸 美国",
@@ -181,57 +184,53 @@ function main(config) {
       name: "🌐 冷门国家",
       type: "select",
       proxies: getProxiesByMatcher(
-        n => !isInfoNode(n) && !isMainRegion(n)
+        n => !isExcludedNode(n) && !isMainRegion(n)
       ).concat(["DIRECT"])
-    },
-    {
-      name: frontSelectorName,    // 前置节点手动选择组
-      type: "select",
-      proxies: ["📶 Auto", "🗺️ AllNodes", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
-    },
-    {
-      name: "📶 Auto",       // 📶 全部节点，自动测速，可用于为静态IP挑选最快机场节点
-      type: "url-test",
-      url: "https://www.gstatic.com/generate_204",
-      interval: 300,
-      tolerance: 50,
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
-    },
-        {
-      name: "🗺️ AllNodes",       // 全部节点，手动选择
-      type: "select",
-      proxies: getProxiesByRegex("^((?!剩余|套餐|到期|流量|更新|网址|重置|官网|防失联|静态IP|music|𝐌𝐮𝐬𝐢𝐜|Unbolck|网易云|音乐|Music|Netease|🎶|手游|游戏|game).)*$")
-    },
-    {
-      name: "🔖 Info",
-      type: "select",
-      proxies: getProxiesByRegex("^(?=.*(?:剩余|套餐|到期|流量|更新|网址|重置|官网|防失联)).*$")
-    },
-    {
-      name: "♾️ Final",
-      type: "select",
-      proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
     },
     {
       name: "🌎️ IPmodify",
       type: "select",
-      proxies: ["DIRECT", "✈️ Overseas", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+      proxies: ["DIRECT", "✈️ Overseas", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "📶 Auto"]
     },
     {
       name: "🔘 Option",
       type: "select",
-      proxies: ["DIRECT", "✈️ Overseas", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "🗺️ AllNodes"]
+      proxies: ["DIRECT", "✈️ Overseas", "🚩 CustomIP", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "📶 Auto"]
     },
     {
       name: "🎮 Game",
       type: "select",
-      proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
+      proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "📶 Auto"]
     },
     // 下载专用组，默认直连防偷跑，也可手动切换大流量节点
     {
       name: "📥 Download",
       type: "select",
-      proxies: ["DIRECT", "✈️ Overseas", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🗺️ AllNodes"]
+      proxies: ["DIRECT", "✈️ Overseas", "🌐 冷门国家",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "📶 Auto"]
+    },
+    // 仅在静态 IP 有效时创建前置节点组
+    ...(hasStaticIP ? [{
+      name: frontSelectorName,    // 前置节点选择组,默认选择最快的节点
+      type: "select",
+      proxies: ["📶 Auto", "🇺🇸 美国", "🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家"]
+    }] : []),
+    {
+      name: "♾️ Final",
+      type: "select",
+      proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP",  "🇺🇸 美国","🌐 欧洲", "🌐 港澳台", "🌐 日韩新", "🌐 冷门国家", "📶 Auto"]
+    },
+    {
+      name: "📶 Auto",       // 📶 全部节点，自动测速并选择最快的，可用于为静态IP挑选最快机场节点
+      type: "url-test",
+      url: "https://www.gstatic.com/generate_204",
+      interval: 300,
+      tolerance: 50,
+      proxies: getProxiesByMatcher(n => !isExcludedNode(n))
+    },
+    {
+      name: "🔖 Info",
+      type: "select",
+      proxies: getProxiesByMatcher(isTrafficInfoNode)
     },
     {
       name: "🎯 Direct",
@@ -245,7 +244,7 @@ function main(config) {
     }
   ];
 
-  // 容错处理：当某些国家分组无节点时自动补充 DIRECT 防止软件解析崩溃
+  // 容错处理：当国家分组无节点时自动补充 DIRECT 防止软件解析崩溃
   config["proxy-groups"].forEach(group => {
     if (!group.proxies || group.proxies.length === 0) {
       group.proxies = ["DIRECT"];
