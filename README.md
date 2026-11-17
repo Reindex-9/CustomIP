@@ -3,6 +3,8 @@
 由于镜像站点不稳定，规则集暂时使用 GitHub 文件的原始链接`https://raw.githubusercontent.com/...` 
 
 # App配置下载
+通用JS覆写脚本配置：`https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ScriptsClashVerge.js`  
+
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
 QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/QuantumulX_MyConfig.conf  
 > 参考配置：
