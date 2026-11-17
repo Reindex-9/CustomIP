@@ -1,10 +1,9 @@
 参考网络配置修改留档自用。  
+通用JS覆写脚本：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ScriptsClashVerge.js  
 注：直接修改本地设置，才能实时更改分流结果；github代码修改后会延迟更新，修改文件名可以立即更新。  
 由于镜像站点不稳定，规则集暂时使用 GitHub 文件的原始链接`https://raw.githubusercontent.com/...` 
 
 # App配置下载
-通用JS覆写脚本配置：`https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ScriptsClashVerge.js`  
-
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
 QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/QuantumulX_MyConfig.conf  
 > 参考配置：
