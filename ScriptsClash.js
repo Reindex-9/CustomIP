@@ -1,6 +1,6 @@
 // =========================================================================
 // Mihomo / Clash Verge 全局预处理脚本 v3.0
-// 最新更新：2026-11-19
+// 最新更新：2026-11-20
 // =========================================================================
 // 功能概览：
 // 1. 策略与规则联动：统一由 rulesets 驱动路由分流与加密 DNS 出口，确保策略一致
@@ -40,22 +40,22 @@ const USER_CONFIG = {
   // - noResolve: 仅针对纯 IP 类规则集设为 true，匹配时跳过域名解析
   rulesets: [
     // 自定义高优先级规则集
-    { id: "CustomIP",         group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/CustomIP.list" },
-    { id: "Direct",           group: "DIRECT",      url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Direct.list" },
-    { id: "Proxy",            group: "✈️ Overseas", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Proxy.list" },
+    { id: "CustomIP",         group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/Policies/CustomIP.list" },
+    { id: "Direct",           group: "DIRECT",      url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/Policies/Direct.list" },
+    { id: "Proxy",            group: "✈️ Overseas", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/Policies/Proxy.list" },
 
     // 局域网与防误杀
     { id: "LocalAreaNetwork", group: "DIRECT",      url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/LocalAreaNetwork.list" },
     { id: "UnBan",            group: "DIRECT",      url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list" },
 
     // 广告与劫持拦截
-    { id: "Reject",           group: "REJECT",      url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/main/ruleset/Reject.list" },
+    { id: "Reject",           group: "REJECT",      url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/Policies/Reject.list" },
     { id: "Hijacking",        group: "REJECT",      url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.list" },
     { id: "BanAD",            group: "REJECT",      url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list" },
     { id: "BanProgramAD",     group: "REJECT",      url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list" },
 
     // 业务分流规则集
-    { id: "AI",               group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ruleset/ruleset/AI.list" },
+    { id: "AI",               group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/RuleSets/AI.list" },
     { id: "YouTube",          group: "▶️ YouTube",  url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.list" },
     { id: "GoogleCNProxyIP",  group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list" },
     { id: "Google",           group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list" },
