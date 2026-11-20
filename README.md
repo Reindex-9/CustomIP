@@ -1,13 +1,13 @@
 参考网络配置修改留档自用。  
 通用JS覆写脚本：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ScriptsClash.js  
-注：直接修改本地设置，才能实时更改分流结果；github代码修改后会延迟更新，修改文件名可以立即更新。  
-由于镜像站点不稳定，规则集暂时使用 GitHub 文件的原始链接`https://raw.githubusercontent.com/...` 
+自定义规则Rules包含Policies（通用自定义，依据策略划分文件）、RuleSets（专项自定义，依据服务/厂商划分）、Rewrites（重写）。  
 
 # App配置下载
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
 QuantumulX：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/QuantumulX_MyConfig.conf  
-> 参考配置：
->   - ClashVerge：https://gist.github.com/dahaha-365/0b8beb613f8d1ee656fe1f21e1a07959  
+注：直接修改本地设置，才能实时更改分流结果；github代码修改后会延迟更新，修改文件名可以立即更新。  
+由于镜像站点不稳定，规则集暂时使用 GitHub 文件的原始链接`https://raw.githubusercontent.com/...`  
+参考配置（ClashVerge）：https://gist.github.com/dahaha-365/0b8beb613f8d1ee656fe1f21e1a07959  
 
 注：raw链下载配置可能失败，换成镜像站地址即可。  
 
