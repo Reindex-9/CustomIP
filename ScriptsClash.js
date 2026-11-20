@@ -302,12 +302,20 @@ function main(config) {
         "📶 Auto"
       ]
     },
+    
     // 常规海外流量出口
     {
       name: "✈️ Overseas",
       type: "select",
       proxies: ["🚩 CustomIP", ...allRegionGroupNames, "📶 Auto"]
     },
+
+    // 手动静态 IP 的前置跳板选择器
+    ...(hasStaticIP ? [{
+      name: frontSelectorName,
+      type: "select",
+      proxies: ["📶 Auto", ...allRegionGroupNames]
+    }] : []),
 
     // 各地区手动选择组（首项挂载对应的隐藏自动测速组）
     ...resolvedRegionGroups.map(g => ({
@@ -316,7 +324,7 @@ function main(config) {
       proxies: [g.auto, ...g.nodes, "DIRECT"]
     })),
 
-    // 独立业务策略组
+    // 独立专项策略组
     {
       name: "▶️ YouTube",
       type: "select",
@@ -342,13 +350,6 @@ function main(config) {
       type: "select",
       proxies: ["DIRECT", "✈️ Overseas", ...allRegionGroupNames, "📶 Auto"]
     },
-
-    // 手动静态 IP 的前置跳板选择器
-    ...(hasStaticIP ? [{
-      name: frontSelectorName,
-      type: "select",
-      proxies: ["📶 Auto", ...allRegionGroupNames]
-    }] : []),
 
     // 兜底策略组
     {
