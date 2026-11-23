@@ -1,18 +1,18 @@
 // =========================================================================
-// Mihomo / Clash Verge 全局预处理脚本 v3.0
-// 最新更新：2026-11-20
+// Mihomo / Clash Verge 全局预处理脚本 v3.1
+// 最新更新：2026-11-23
 // =========================================================================
 // 功能概览：
 // 1. 策略与规则联动：统一由 rulesets 驱动路由分流与加密 DNS 出口，确保策略一致
-// 2. 双模式链式代理：读取 Merge 中的 static-proxy 配置块，构建手动前置与按需测速链路
-// 3. 节点清洗与分类：按关键字与国家代码词边界自动标注国旗，过滤非代理信息节点
+// 2. 双模式链式代理：支持按地区编号生成可见自动链式测速组，以及多地区链式手动前置组
+// 3. 节点清洗与分类：按关键字与国家代码词边界自动标注国旗，过滤非代理信息节点与空地区组
 // =========================================================================
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  配置区 (USER_CONFIG)                                                 ║
 // ╚═══════════════════════════════════════════════════════════════════════╝
 const USER_CONFIG = {
 
-// 1. 基础开关与静态代理配置
+  // 1. 基础开关与静态代理配置
   staticProxyKey: "static-proxy",    // 外部覆写（如 Clash Verge Merge）约定的静态代理字段名，优先读取
   staticProxy: {                     // 内置静态代理配置（未检测到外部覆写时生效，适用于 FlClash 等单脚本客户端）
     type: "socks5",                  // 协议类型（支持 socks5 / http / vless / trojan / ss / hysteria2 等）
@@ -20,19 +20,20 @@ const USER_CONFIG = {
     port: 109,                       // 端口号（1 - 65535）
     username: "",                    // 鉴权用户名（无鉴权可留空）
     password: "",                    // 鉴权密码（无鉴权可留空）
-    udp: true                        // 是否启用 UDP 转发
+    udp: true,                       // 是否启用 UDP 转发
+    region: ""                       // 自定义配置，「⛓️ 静态链路自动」对应的地区编号，多个用逗号隔开（如 "1,3"）；留空或未命中则跳过生成
   },
-  enableAutoChain: true,             // 是否生成「🔒 静态链路自动」全节点对照测速组（lazy: true 按需测速）
+  enableAutoChain: true,             // 是否启用「⛓️ 静态链路自动」按指定地区生成链式测速组
 
-  // 2. 地区策略组定义（按国旗聚合，并自动生成对应的隐藏 url-test 测速组）
+  // 2. 地区策略组定义（id 为固定编号，供 static-proxy.region 指定；按国旗聚合，自动生成隐藏 url-test 组）
   regionGroups: [
-    { name: "🇺🇸 美国",   auto: "⚡ 美国自动",   flags: ["🇺🇸"] },
-    { name: "🇨🇳 港澳台", auto: "⚡ 港澳台自动", flags: ["🇭🇰", "🇹🇼", "🇲🇴"] },
-    { name: "🌏 日韩新", auto: "⚡ 日韩新自动", flags: ["🇯🇵", "🇰🇷", "🇸🇬"] },
-    { name: "🇪🇺 欧洲",   auto: "⚡ 欧洲自动",   flags: ["🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹", "🇳🇱"] },
-    { name: "🛒 低价区", auto: "⚡ 低价区自动", flags: ["🇹🇷", "🇦🇷", "🇳🇬", "🇮🇳", "🇧🇷", "🇵🇭", "🇪🇬", "🇺🇦", "🇵🇰", "🇮🇩", "🇲🇾", "🇹🇭", "🇻🇳"] }
+    { id: 1, name: "🇺🇸 美国",   auto: "⚡ 美国自动",   flags: ["🇺🇸"] },
+    { id: 2, name: "🇨🇳 港澳台", auto: "⚡ 港澳台自动", flags: ["🇭🇰", "🇹🇼", "🇲🇴"] },
+    { id: 3, name: "🌏 日韩新", auto: "⚡ 日韩新自动", flags: ["🇯🇵", "🇰🇷", "🇸🇬"] },
+    { id: 4, name: "🇪🇺 欧洲",   auto: "⚡ 欧洲自动",   flags: ["🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹", "🇳🇱"] },
+    { id: 5, name: "🛒 低价区", auto: "⚡ 低价区自动", flags: ["🇹🇷", "🇦🇷", "🇳🇬", "🇮🇳", "🇧🇷", "🇵🇭", "🇪🇬", "🇺🇦", "🇵🇰", "🇮🇩", "🇲🇾", "🇹🇭", "🇻🇳"] }
   ],
-  otherRegionGroup: { name: "🗺️ 其他地区", auto: "⚡ 其他地区自动" }, // 未命中上述国旗的兜底地区组
+  otherRegionGroup: { id: 6, name: "🗺️ 其他地区", auto: "⚡ 其他地区自动" }, // 未命中上述国旗的兜底地区组
 
   // 3. 分流规则集清单（脚本自动将非 REJECT / 非纯 IP 规则集的 DNS 出口与 group 保持同步）
   // - id       : 唯一标识，用于生成 provider 名称及本地缓存路径
@@ -157,10 +158,10 @@ function main(config) {
   // -------------------------------------------------------------------------
   // 2. 提取并校验 Merge 注入的静态代理配置块
   // -------------------------------------------------------------------------
-  const staticIPName = "🏠 专属静态IP(手动前置)";
-  const staticAutoGroupName = "🔒 静态链路自动";
-  const frontSelectorName = "🪢 前置节点";
-  const chainPrefix = "🔗 静态链路 · ";
+  const staticManualGroupName = "🏠 静态IP(手动前置)";
+  const staticAutoGroupName = "⛓️ 静态链路自动";
+  const manualChainPrefix = "🔗 静态 · ";
+  const autoChainPrefix = "🔗 静态链路 · ";
 
   // 读取 static-proxy 配置块，并从最终配置中清理该临时字段（优先读取 Merge、兜底读取 USER_CONFIG）
   const rawStaticProxy = config[USER_CONFIG.staticProxyKey] || USER_CONFIG.staticProxy;
@@ -180,6 +181,19 @@ function main(config) {
       port >= 1 &&
       port <= 65535
     );
+  };
+
+  // 解析地区编号（支持单数字、逗号分隔字符串、数组，兼容中文逗号）
+  const parseRegionIds = (value) => {
+    if (value === undefined || value === null || value === "") return [];
+    const rawList = Array.isArray(value)
+      ? value
+      : String(value).split(/[,，\s]+/);
+    return [...new Set(
+      rawList
+        .map(item => Number(String(item).trim()))
+        .filter(num => Number.isInteger(num) && num > 0)
+    )];
   };
 
   const hasStaticIP = isValidStaticNode(rawStaticProxy);
@@ -219,12 +233,13 @@ function main(config) {
     }
   });
 
-  // 按地区分组表聚合有效节点
+  // 按地区分组表聚合有效节点，并过滤无节点的空地区组
   const baseProxyNames = [...new Set(config.proxies.map(p => p && p.name).filter(Boolean))];
   const validNormalNames = baseProxyNames.filter(n => !USER_CONFIG.excludePattern.test(n));
 
   const allDefinedFlags = new Set(USER_CONFIG.regionGroups.flatMap(g => g.flags));
   const resolvedRegionGroups = USER_CONFIG.regionGroups.map(group => ({
+    id: group.id,
     name: group.name,
     auto: group.auto,
     nodes: validNormalNames.filter(n => group.flags.some(flag => n.includes(flag)))
@@ -234,57 +249,84 @@ function main(config) {
     n => ![...allDefinedFlags].some(flag => n.includes(flag))
   );
   resolvedRegionGroups.push({
+    id: USER_CONFIG.otherRegionGroup.id,
     name: USER_CONFIG.otherRegionGroup.name,
     auto: USER_CONFIG.otherRegionGroup.auto,
     nodes: otherNodes
   });
 
-  const allRegionGroupNames = resolvedRegionGroups.map(g => g.name);
+  const activeRegionGroups = resolvedRegionGroups.filter(g => g.nodes.length > 0);
+  const allRegionGroupNames = activeRegionGroups.map(g => g.name);
 
   // -------------------------------------------------------------------------
   // 4. 生成链式代理节点 (dialer-proxy)
   // -------------------------------------------------------------------------
-  const chainNodeNames = [];
+  const manualChainNodeNames = [];
+  const autoChainNodeNames = [];
 
   if (hasStaticIP) {
-    // 继承静态配置块的所有协议参数，剔除可能误填的 name 与 dialer-proxy
-    const { name: _ignoreName, "dialer-proxy": _ignoreDialer, ...staticTemplate } = rawStaticProxy;
+    // 继承静态配置块的所有协议参数，剔除辅助字段及可能误填的 name / dialer-proxy
+    const {
+      name: _ignoreName,
+      "dialer-proxy": _ignoreDialer,
+      region: _ignoreRegion,
+      regions: _ignoreRegions,
+      ...staticTemplate
+    } = rawStaticProxy;
     if (staticTemplate.username === "") delete staticTemplate.username;
     if (staticTemplate.password === "") delete staticTemplate.password;
 
-    // 手动前置模式：通过「🪢 前置节点」策略组中转
-    config.proxies.push({
-      ...staticTemplate,
-      name: staticIPName,
-      "dialer-proxy": frontSelectorName
+    // 手动前置链式入口：为 📶 Auto 与各非空地区组建立链式代理，供「🏠 静态IP(手动前置)」组内横向测速与切换
+    const manualChainTargets = [
+      ...(validNormalNames.length > 0 ? ["📶 Auto"] : []),
+      ...allRegionGroupNames
+    ];
+    manualChainTargets.forEach(targetGroupName => {
+      const manualChainNodeName = `${manualChainPrefix}${targetGroupName}`;
+      manualChainNodeNames.push(manualChainNodeName);
+      config.proxies.push({
+        ...staticTemplate,
+        name: manualChainNodeName,
+        "dialer-proxy": targetGroupName
+      });
     });
 
-    // 全节点对照测速模式：为每个有效普通节点建立一对一链式出口
+    // 指定地区全节点链式入口：仅命中有效地区编号且存在节点时生成，未命中则跳过「⛓️ 静态链路自动」
     if (USER_CONFIG.enableAutoChain) {
-      validNormalNames.forEach(nodeName => {
-        const chainNodeName = `${chainPrefix}${nodeName}`;
-        chainNodeNames.push(chainNodeName);
+      const targetRegionIds = parseRegionIds(rawStaticProxy.region ?? rawStaticProxy.regions);
+      const autoChainSourceNodes = [...new Set(
+        activeRegionGroups
+          .filter(g => targetRegionIds.includes(g.id))
+          .flatMap(g => g.nodes)
+      )];
+
+      autoChainSourceNodes.forEach(nodeName => {
+        const autoChainNodeName = `${autoChainPrefix}${nodeName}`;
+        autoChainNodeNames.push(autoChainNodeName);
         config.proxies.push({
           ...staticTemplate,
-          name: chainNodeName,
+          name: autoChainNodeName,
           "dialer-proxy": nodeName
         });
       });
     }
   }
 
+  const hasManualStaticGroup = hasStaticIP && manualChainNodeNames.length > 0;
+  const hasAutoStaticGroup = hasStaticIP && autoChainNodeNames.length > 0;
+
   // -------------------------------------------------------------------------
   // 5. 构建策略组 (proxy-groups)
   // -------------------------------------------------------------------------
-  // lazy: true 仅在策略组被实际选中时触发测速，避免后台空转产生无效请求
-  const createHiddenUrlTest = (name, nodeList, interval = 300, timeout = 5000) => ({
+  // 各地区隐藏自动组采用 lazy: false（纯机场测速不触及静态 IP），保证手动前置跨地区链式测速随时处于热态
+  const createHiddenRegionUrlTest = (name, nodeList, interval = 300, timeout = 5000) => ({
     name,
     type: "url-test",
     url: "https://www.gstatic.com/generate_204",
     interval,
     timeout,
     tolerance: 50,
-    lazy: true,
+    lazy: false,
     "expected-status": "204",
     hidden: true,
     proxies: nodeList.length > 0 ? nodeList : ["DIRECT"]
@@ -296,13 +338,33 @@ function main(config) {
       name: "🚩 CustomIP",
       type: "select",
       proxies: [
-        ...(hasStaticIP ? [staticIPName] : []),
-        ...(hasStaticIP && chainNodeNames.length > 0 ? [staticAutoGroupName] : []),
+        ...(hasManualStaticGroup ? [staticManualGroupName] : []),
+        ...(hasAutoStaticGroup ? [staticAutoGroupName] : []),
         ...allRegionGroupNames,
         "📶 Auto"
       ]
     },
-    
+
+    // 手动前置静态链路组（组内直接测速「目标地区当前激活节点 -> 静态IP」端到端延迟）
+    ...(hasManualStaticGroup ? [{
+      name: staticManualGroupName,
+      type: "select",
+      proxies: manualChainNodeNames
+    }] : []),
+
+    // 指定地区静态链路自动测速组（可见，lazy: true 避免后台对静态 IP 空转测速，如节点少可改为 tolerance: 20 降低切换滞后）
+    ...(hasAutoStaticGroup ? [{
+      name: staticAutoGroupName,
+      type: "url-test",
+      url: "https://www.gstatic.com/generate_204",
+      interval: 300,
+      timeout: 10000,
+      tolerance: 50,
+      lazy: true,
+      "expected-status": "204",
+      proxies: autoChainNodeNames
+    }] : []),
+
     // 常规海外流量出口
     {
       name: "✈️ Overseas",
@@ -310,15 +372,8 @@ function main(config) {
       proxies: ["🚩 CustomIP", ...allRegionGroupNames, "📶 Auto"]
     },
 
-    // 手动静态 IP 的前置跳板选择器
-    ...(hasStaticIP ? [{
-      name: frontSelectorName,
-      type: "select",
-      proxies: ["📶 Auto", ...allRegionGroupNames]
-    }] : []),
-
-    // 各地区手动选择组（首项挂载对应的隐藏自动测速组）
-    ...resolvedRegionGroups.map(g => ({
+    // 各非空地区手动选择组（首项挂载对应的隐藏自动测速组）
+    ...activeRegionGroups.map(g => ({
       name: g.name,
       type: "select",
       proxies: [g.auto, ...g.nodes, "DIRECT"]
@@ -357,7 +412,8 @@ function main(config) {
       type: "select",
       proxies: ["✈️ Overseas", "DIRECT", "🚩 CustomIP", ...allRegionGroupNames, "📶 Auto"]
     },
-    // 全局有效节点自动测速
+
+    // 全局有效节点自动测速（lazy: false 保证作为手动前置入口时随时指向最优机场节点）
     {
       name: "📶 Auto",
       type: "url-test",
@@ -365,16 +421,13 @@ function main(config) {
       interval: 300,
       timeout: 5000,
       tolerance: 50,
-      lazy: true,
+      lazy: false,
       "expected-status": "204",
       proxies: validNormalNames.length > 0 ? validNormalNames : ["DIRECT"]
     },
 
-    // 后台隐藏测速组
-    ...(hasStaticIP && chainNodeNames.length > 0
-      ? [createHiddenUrlTest(staticAutoGroupName, chainNodeNames, 300, 10000)]
-      : []),
-    ...resolvedRegionGroups.map(g => createHiddenUrlTest(g.auto, g.nodes))
+    // 后台隐藏地区自动测速组
+    ...activeRegionGroups.map(g => createHiddenRegionUrlTest(g.auto, g.nodes))
   ];
 
   // -------------------------------------------------------------------------
