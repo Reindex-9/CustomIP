@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 # =================== 版本信息 =================
-# v0.2 2026-11-24 新增历史数据库与多维评分功能。自动在同目录创建 static_chain_history.db 持久化所有批次，并生成 latest_recommendation.yaml 供参考复制。
+# v0.1 2026-11-24
 
 # ================= 基础配置区 =================
 CONTROLLER = "http://127.0.0.1:9097"      # Clash Verge 外部控制地址
@@ -30,9 +30,16 @@ TIMEOUT_MS = 5000                         # 单次测速超时（毫秒）
 INCLUDE_KEYWORDS = []
 EXCLUDE_KEYWORDS = []
 
-# 可选：手动声明已知机场前缀，优先精准匹配（适合前缀无空格/分隔符的命名）
-# 示例：KNOWN_AIRPORTS = ["橘子云", "蓝鲸", "AirportA"]
+# 已知机场规范名（优先精准匹配，适合前缀与节点本体无空格/分隔符的情况）
+# 示例：KNOWN_AIRPORTS = ["悦通", "良心云"]
 KNOWN_AIRPORTS = []
+
+# 机场别名映射（旧名 -> 规范名）：解决机场改名/缩写后历史记录自动合并
+# 示例：AIRPORT_ALIASES = {"旧机场名": "新机场名"}
+AIRPORT_ALIASES = {
+    "三毛机场": "三毛",
+}
+
 DEFAULT_AIRPORT = "未标注机场"             # 单机场订阅且未传 --airport 时的默认归属名
 
 # 测速节奏与复测参数
@@ -81,6 +88,65 @@ NON_AIRPORT_TOKENS = {
     "IEPL", "IPLC", "BGP", "GIA", "CN2", "V1", "V2", "V3", "PRO", "VIP", "STD", "LITE",
     "DIRECT", "AUTO", "PROXY", "IPV4", "IPV6", "UDP", "TCP", "TLS", "WS", "GRPC"
 }
+
+
+def canonicalize_airport(name):
+    """按 AIRPORT_ALIASES 将机场名映射为规范名，支持多级链式别名。"""
+    cur = str(name or "").strip() or DEFAULT_AIRPORT
+    seen = set()
+    while cur in AIRPORT_ALIASES and cur not in seen:
+        seen.add(cur)
+        nxt = str(AIRPORT_ALIASES[cur]).strip()
+        if not nxt:
+            break
+        cur = nxt
+    return cur
+
+
+def get_aliases_for_canonical(canonical_airport):
+    """返回映射到指定规范机场名的全部旧别名集合（用于核心节点名剥离）。"""
+    aliases = set()
+    for old_name in AIRPORT_ALIASES.keys():
+        if canonicalize_airport(old_name) == canonical_airport:
+            aliases.add(str(old_name).strip())
+    return aliases
+
+
+def extract_core_name(node_name, raw_airport, canonical_airport):
+    """剥离机场前缀与国旗，提取稳定的核心节点名，兼容改前缀与单机场/聚合订阅互切。"""
+    s = LEADING_FLAGS_RE.sub("", node_name).strip()
+
+    tokens = set()
+    for t in (raw_airport, canonical_airport, *get_aliases_for_canonical(canonical_airport)):
+        t_clean = str(t or "").strip()
+        if t_clean and t_clean != DEFAULT_AIRPORT:
+            tokens.add(t_clean)
+
+    # 按长度降序尝试剥离前缀（避免短名抢先截断长名，如“良心云”截断“良心云机场”）
+    for tok in sorted(tokens, key=len, reverse=True):
+        esc = re.escape(tok)
+        m_bracket = re.match(rf"^[\[\【「(]\s*{esc}\s*[\]\】」)][\s|｜:：/·\-_]*", s)
+        if m_bracket:
+            s = s[m_bracket.end():].strip()
+            break
+        m_bare = re.match(rf"^{esc}[\s|｜:：/·\-_]*", s)
+        if m_bare:
+            s = s[m_bare.end():].strip()
+            break
+
+    s = FLAG_RE.sub("", s)
+    s = re.sub(r"\s*·\s*", "·", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s if s else node_name.strip()
+
+
+def make_node_key(node_name, raw_airport, canonical_airport=None):
+    """构造跨前缀变化与单/聚合订阅通用的稳定节点主键：规范机场名::国旗::核心节点名。"""
+    canon = canonical_airport if canonical_airport is not None else canonicalize_airport(raw_airport)
+    flag_match = FLAG_RE.search(node_name)
+    flag = flag_match.group(0) if flag_match else ""
+    core = extract_core_name(node_name, raw_airport, canon)
+    return f"{canon}::{flag}::{core}"
 
 
 def api_request(method, path, body=None, timeout=10):
@@ -150,7 +216,6 @@ def is_non_airport_token(token):
     upper = t.upper()
     if upper in NON_AIRPORT_TOKENS or t in NON_AIRPORT_TOKENS:
         return True
-    # 排除纯数字、倍率标签（如 1x / 0.5X / 2倍）与国旗
     if re.fullmatch(r"[\d.]+[xX倍]?", t):
         return True
     if FLAG_RE.search(t):
@@ -159,53 +224,65 @@ def is_non_airport_token(token):
 
 
 def build_airport_map(node_names, forced_airport=None):
-    """为当前订阅的全部节点推断归属机场：支持 --airport 强制指定、KNOWN_AIRPORTS 与 Sub-Store 前缀自动识别。"""
+    """为当前订阅节点推断规范机场名：支持 --airport、KNOWN_AIRPORTS/别名表与 Sub-Store 前缀识别。"""
     if forced_airport:
-        return {n: forced_airport.strip() for n in node_names}
+        canon = canonicalize_airport(forced_airport)
+        return {n: canon for n in node_names}
 
-    known_sorted = sorted(
-        [k.strip() for k in KNOWN_AIRPORTS if k and k.strip()],
-        key=len,
-        reverse=True,
-    )
+    known_pool = set()
+    for k in KNOWN_AIRPORTS:
+        if k and str(k).strip():
+            known_pool.add(str(k).strip())
+    for k, v in AIRPORT_ALIASES.items():
+        if k and str(k).strip():
+            known_pool.add(str(k).strip())
+        if v and str(v).strip():
+            known_pool.add(str(v).strip())
+    known_sorted = sorted(known_pool, key=len, reverse=True)
 
-    result = {}
-    space_candidates = {}  # node -> (token, flag)
-    token_flags = {}       # token -> set of flags
-    token_counts = {}      # token -> count
+    raw_result = {}
+    space_candidates = {}
+    token_flags = {}
+    token_counts = {}
 
     for name in node_names:
         flag_match = FLAG_RE.search(name)
         node_flag = flag_match.group(0) if flag_match else ""
         stripped = LEADING_FLAGS_RE.sub("", name).strip()
 
-        # 1. 优先匹配 KNOWN_AIRPORTS
+        # 1. 优先匹配已知机场名 / 别名（按长度降序）
         matched_known = None
         for known in known_sorted:
-            if name.startswith(known) or stripped.startswith(known):
-                matched_known = known
-                break
-            if re.match(rf"^[\[\【「(]\s*{re.escape(known)}\s*[\]\】」)]", stripped):
+            esc = re.escape(known)
+            if (
+                re.match(rf"^[\[\【「(]\s*{esc}\s*[\]\】」)]", name)
+                or re.match(rf"^[\[\【「(]\s*{esc}\s*[\]\】」)]", stripped)
+                or name.startswith(known)
+                or stripped.startswith(known)
+            ):
                 matched_known = known
                 break
         if matched_known:
-            result[name] = matched_known
+            raw_result[name] = matched_known
             continue
 
-        # 2. 原名称中位于国旗之前的前缀（典型 Sub-Store：机场A 🇭🇰 香港01）
+        # 2. 优先匹配括号前缀（同时兼容 [悦通] 悦·🇭🇰 香港01 与 🇭🇰 [悦通] 悦·香港01）
+        m_bracket = (
+            re.match(r"^[\[\【「(]([^\]\】」)]{1,24})[\]\】」)]", name.strip())
+            or re.match(r"^[\[\【「(]([^\]\】」)]{1,24})[\]\】」)]", stripped)
+        )
+        if m_bracket:
+            cand = m_bracket.group(1).strip()
+            if not is_non_airport_token(cand):
+                raw_result[name] = cand
+                continue
+
+        # 3. 位于国旗之前的前缀（典型 Sub-Store：机场A 🇭🇰 香港01）
         if flag_match and flag_match.start() > 0:
             before_flag = name[:flag_match.start()].strip()
             before_clean = re.sub(r"^[\[\【「(\s]+|[\]\】」)\s|\-_:：/·]+$", "", before_flag).strip()
             if before_clean and not is_non_airport_token(before_clean):
-                result[name] = before_clean
-                continue
-
-        # 3. 剥离前导国旗后的括号前缀（如 🇭🇰 [机场A] 香港01 / 🇭🇰 【机场A】香港01）
-        m_bracket = re.match(r"^[\[\【「(]([^\]\】」)]{1,24})[\]\】」)]", stripped)
-        if m_bracket:
-            cand = m_bracket.group(1).strip()
-            if not is_non_airport_token(cand):
-                result[name] = cand
+                raw_result[name] = before_clean
                 continue
 
         # 4. 剥离前导国旗后的显式分隔符（| ｜ ： : /）
@@ -213,10 +290,10 @@ def build_airport_map(node_names, forced_airport=None):
         if m_delim:
             cand = m_delim.group(1).strip()
             if not is_non_airport_token(cand):
-                result[name] = cand
+                raw_result[name] = cand
                 continue
 
-        # 5. 弱分隔符（空格 / - / _）：先收集，稍后按跨国旗复现校验防止误判单机场地名
+        # 5. 弱分隔符（空格 / - / _）：结合跨国旗复现校验防止误判单机场地名
         m_weak = re.match(r"^([^\s\-_]{1,20})(?:\s+|\s*[-_]\s*)\S", stripped)
         if m_weak:
             cand = m_weak.group(1).strip()
@@ -226,17 +303,16 @@ def build_airport_map(node_names, forced_airport=None):
                 token_flags.setdefault(cand, set()).add(node_flag)
                 continue
 
-        result[name] = DEFAULT_AIRPORT
+        raw_result[name] = DEFAULT_AIRPORT
 
-    # 校验弱分隔符候选：至少跨 2 种国旗，或命中 >=3 个节点才认定为机场前缀
     for name, (cand, _) in space_candidates.items():
         distinct_flags = {f for f in token_flags.get(cand, set()) if f}
         if len(distinct_flags) >= 2 or token_counts.get(cand, 0) >= 3:
-            result[name] = cand
+            raw_result[name] = cand
         else:
-            result[name] = DEFAULT_AIRPORT
+            raw_result[name] = DEFAULT_AIRPORT
 
-    return result
+    return {n: canonicalize_airport(ap) for n, ap in raw_result.items()}
 
 
 def discover_probe_and_nodes():
@@ -374,8 +450,8 @@ def save_run_to_db(conn, now_ts, now_iso, static_ip, is_peak, records, batch_med
     return run_id
 
 
-def query_ip_history_ranking(conn, static_ip, alive_set, now_ts, current_airport_map=None):
-    """计算当前静态 IP 的历史最优榜（时间衰减 + 晚高峰加权 + 贝叶斯平滑）。"""
+def query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts):
+    """按归一化主键计算当前静态 IP 的历史最优榜（时间衰减 + 晚高峰加权 + 贝叶斯平滑）。"""
     rows = conn.execute(
         """
         SELECT s.node_name, s.airport, s.ok_count, s.total_count, s.avg_ms, s.jitter_ms,
@@ -389,16 +465,21 @@ def query_ip_history_ranking(conn, static_ip, alive_set, now_ts, current_airport
     ).fetchall()
 
     grouped = {}
-    for node_name, airport, ok_c, tot_c, avg_ms, jitter_ms, eff_score, tested_at, is_peak in rows:
-        if alive_set is not None and node_name not in alive_set:
+    for node_name, raw_airport, ok_c, tot_c, avg_ms, jitter_ms, eff_score, tested_at, is_peak in rows:
+        canon_ap = canonicalize_airport(raw_airport)
+        node_key = make_node_key(node_name, raw_airport, canon_ap)
+        if live_key_to_node is not None and node_key not in live_key_to_node:
             continue
+
+        display_name = live_key_to_node[node_key] if live_key_to_node is not None else node_name
         age_days = max(0.0, (now_ts - tested_at) / 86400.0)
         decay = 0.5 ** (age_days / HALF_LIFE_IP_DAYS)
         w = decay * (PEAK_WEIGHT if is_peak else NORMAL_WEIGHT)
 
-        entry = grouped.setdefault(node_name, {
-            "node_name": node_name,
-            "airport": airport,
+        entry = grouped.setdefault(node_key, {
+            "node_key": node_key,
+            "node_name": display_name,
+            "airport": canon_ap,
             "sum_w": 0.0,
             "sum_w_eff": 0.0,
             "sum_w_avail": 0.0,
@@ -408,7 +489,8 @@ def query_ip_history_ranking(conn, static_ip, alive_set, now_ts, current_airport
             "last_avg": None,
             "last_eff": eff_score,
         })
-        entry["airport"] = (current_airport_map or {}).get(node_name, airport)
+        entry["node_name"] = display_name
+        entry["airport"] = canon_ap
         entry["sum_w"] += w
         entry["sum_w_eff"] += w * eff_score
         entry["sum_w_avail"] += w * (ok_c / float(tot_c))
@@ -433,6 +515,7 @@ def query_ip_history_ranking(conn, static_ip, alive_set, now_ts, current_airport
         w_avg = (e["sum_w_avg"] / e["sum_w_ok"]) if e["sum_w_ok"] > 0 else None
         bayes_score = (w * w_eff + BAYES_PRIOR_M * global_prior) / (w + BAYES_PRIOR_M)
         ranking.append({
+            "node_key": e["node_key"],
             "node_name": e["node_name"],
             "airport": e["airport"],
             "history_score": bayes_score,
@@ -448,8 +531,8 @@ def query_ip_history_ranking(conn, static_ip, alive_set, now_ts, current_airport
     return ranking
 
 
-def query_global_history_ranking(conn, alive_set, now_ts, current_airport_map=None):
-    """计算跨所有静态 IP 的整体最优节点榜与各机场综合表现榜（基于标准化相对分）。"""
+def query_global_history_ranking(conn, live_key_to_node, now_ts):
+    """按归一化主键计算跨静态 IP 的整体最优节点榜与各机场综合表现榜。"""
     rows = conn.execute(
         """
         SELECT s.node_name, s.airport, s.ok_count, s.total_count, s.rel_score,
@@ -461,21 +544,29 @@ def query_global_history_ranking(conn, alive_set, now_ts, current_airport_map=No
     ).fetchall()
 
     grouped = {}
-    for node_name, airport, ok_c, tot_c, rel_score, static_ip, tested_at, is_peak in rows:
+    for node_name, raw_airport, ok_c, tot_c, rel_score, static_ip, tested_at, is_peak in rows:
+        canon_ap = canonicalize_airport(raw_airport)
+        node_key = make_node_key(node_name, raw_airport, canon_ap)
+        if live_key_to_node is not None and node_key not in live_key_to_node:
+            continue
+
+        display_name = live_key_to_node[node_key] if live_key_to_node is not None else node_name
         age_days = max(0.0, (now_ts - tested_at) / 86400.0)
         decay = 0.5 ** (age_days / HALF_LIFE_GLOBAL_DAYS)
         w = decay * (PEAK_WEIGHT if is_peak else NORMAL_WEIGHT)
 
-        entry = grouped.setdefault(node_name, {
-            "node_name": node_name,
-            "airport": airport,
+        entry = grouped.setdefault(node_key, {
+            "node_key": node_key,
+            "node_name": display_name,
+            "airport": canon_ap,
             "sum_w": 0.0,
             "sum_w_rel": 0.0,
             "sum_w_avail": 0.0,
             "runs": 0,
             "ips": set(),
         })
-        entry["airport"] = (current_airport_map or {}).get(node_name, airport)
+        entry["node_name"] = display_name
+        entry["airport"] = canon_ap
         entry["sum_w"] += w
         entry["sum_w_rel"] += w * rel_score
         entry["sum_w_avail"] += w * (ok_c / float(tot_c))
@@ -489,20 +580,18 @@ def query_global_history_ranking(conn, alive_set, now_ts, current_airport_map=No
         w = e["sum_w"]
         w_rel = e["sum_w_rel"] / w
         w_avail = e["sum_w_avail"] / w
-        # 贝叶斯平滑向先验 50 分收缩（越高越好）
         global_score = (w * w_rel + BAYES_PRIOR_M * 50.0) / (w + BAYES_PRIOR_M)
         item = {
+            "node_key": e["node_key"],
             "node_name": e["node_name"],
             "airport": e["airport"],
             "global_score": global_score,
             "avail": w_avail,
             "runs": e["runs"],
             "ip_count": len(e["ips"]),
-            "alive": (alive_set is None) or (e["node_name"] in alive_set),
         }
-        if item["alive"]:
-            node_ranking.append(item)
-            airport_buckets.setdefault(item["airport"], []).append(item)
+        node_ranking.append(item)
+        airport_buckets.setdefault(item["airport"], []).append(item)
 
     node_ranking.sort(key=lambda x: (-x["global_score"], -x["avail"]))
 
@@ -542,10 +631,9 @@ def pick_diverse_nodes(ip_ranking):
     score_ceiling = best_score * DIVERSITY_SCORE_RATIO
 
     picked = []
-    picked_names = set()
+    picked_keys = set()
     airport_counts = {}
 
-    # 第一轮：在质量护栏内按单机场上限选取，兼顾速度与多机场容灾
     for item in usable:
         if len(picked) >= FINAL_PICK:
             break
@@ -555,20 +643,92 @@ def pick_diverse_nodes(ip_ranking):
         if airport_counts.get(ap, 0) >= effective_cap:
             continue
         picked.append(item)
-        picked_names.add(item["node_name"])
+        picked_keys.add(item["node_key"])
         airport_counts[ap] = airport_counts.get(ap, 0) + 1
 
-    # 第二轮：若不足 FINAL_PICK，放开上限从剩余合格节点按排名补齐
     if len(picked) < FINAL_PICK:
         for item in usable:
             if len(picked) >= FINAL_PICK:
                 break
-            if item["node_name"] in picked_names:
+            if item["node_key"] in picked_keys:
                 continue
             picked.append(item)
-            picked_names.add(item["node_name"])
+            picked_keys.add(item["node_key"])
 
     return picked, effective_cap
+
+
+def handle_list_airports(conn):
+    rows = conn.execute(
+        """
+        SELECT airport, COUNT(*) AS sample_cnt, COUNT(DISTINCT node_name) AS node_cnt, MAX(node_name)
+        FROM samples
+        GROUP BY airport
+        ORDER BY sample_cnt DESC
+        """
+    ).fetchall()
+    if not rows:
+        print("历史数据库暂无任何记录。")
+        return
+    print("数据库内已记录机场清单：")
+    for ap, sample_cnt, node_cnt, example_node in rows:
+        canon = canonicalize_airport(ap)
+        alias_note = f" -> 映射为 [{canon}]" if canon != ap else ""
+        print(f"  - {ap}{alias_note} | 样本 {sample_cnt} 条 | 节点 {node_cnt} 个 | 示例: {example_node}")
+
+
+def handle_merge_airport(conn, old_ap, new_ap, replace_pair=None, keep_node_name=False, auto_yes=False):
+    """合并历史库中的机场名，并可选同步修正 node_name 中的旧前缀文本。"""
+    old_ap = old_ap.strip()
+    new_ap = new_ap.strip()
+    rows = conn.execute(
+        "SELECT id, node_name FROM samples WHERE airport = ?",
+        (old_ap,),
+    ).fetchall()
+    if not rows:
+        print(f"未在数据库中找到机场名为「{old_ap}」的历史记录。")
+        return
+
+    old_sub, new_sub = (replace_pair[0], replace_pair[1]) if replace_pair else (old_ap, new_ap)
+    do_replace = (not keep_node_name) and (old_sub != "") and (old_sub != new_sub)
+
+    preview_map = {}
+    for _, node_name in rows:
+        if node_name in preview_map:
+            continue
+        new_node_name = node_name.replace(old_sub, new_sub, 1) if do_replace else node_name
+        preview_map[node_name] = new_node_name
+        if len(preview_map) >= 8:
+            break
+
+    print(f"即将合并历史记录：{len(rows)} 条样本")
+    print(f"  机场名：{old_ap}  -->  {new_ap}")
+    if do_replace:
+        print(f"  节点名局部替换（首次命中）：{old_sub!r}  -->  {new_sub!r}")
+    else:
+        print("  节点名：保持不变")
+    print("  变更示例：")
+    for before, after in preview_map.items():
+        mark = "（不变）" if before == after else f" --> {after}"
+        print(f"    {before}{mark}")
+
+    if not auto_yes:
+        ans = input("\n确认写入数据库？[y/N]: ").strip().lower()
+        if ans not in ("y", "yes"):
+            print("已取消，未修改数据库。")
+            return
+
+    cur = conn.cursor()
+    if do_replace:
+        updates = [
+            (new_ap, node_name.replace(old_sub, new_sub, 1), row_id)
+            for row_id, node_name in rows
+        ]
+        cur.executemany("UPDATE samples SET airport = ?, node_name = ? WHERE id = ?", updates)
+    else:
+        cur.execute("UPDATE samples SET airport = ? WHERE airport = ?", (new_ap, old_ap))
+    conn.commit()
+    print(f"合并完成，已更新 {len(rows)} 条历史样本。")
 
 
 def export_recommendation_yaml(static_ip, now_iso, picked, effective_cap):
@@ -619,12 +779,11 @@ def print_reports(static_ip, now_iso, current_records, ip_ranking, global_rankin
                 f"| 可用 {item['avail']*100:>3.0f}% | {item['runs']:>2}次 | [{item['airport']}] {item['node_name']}"
             )
 
-    # 新节点 / 新机场潜力观察区（历史 <=2 次且进入本次前 20%）
     if current_records and ip_ranking:
         ok_sorted = sorted([r for r in current_records if r["ok_count"] > 0], key=lambda x: x["eff_score"])
         top20_cut = max(3, math.ceil(len(ok_sorted) * 0.2))
-        top20_names = {r["node_name"] for r in ok_sorted[:top20_cut]}
-        new_stars = [item for item in ip_ranking if item["is_new"] and item["node_name"] in top20_names]
+        top20_keys = {r["node_key"] for r in ok_sorted[:top20_cut]}
+        new_stars = [item for item in ip_ranking if item["is_new"] and item["node_key"] in top20_keys]
         if new_stars:
             print("\n--- 新节点 / 新机场潜力观察区（历史 <=2 次且本次进入前 20%）---")
             for item in new_stars[:8]:
@@ -670,6 +829,25 @@ def main():
     parser.add_argument("--airport", default=None, help="强制指定本次订阅归属的机场名（适合单机场订阅）")
     parser.add_argument("--report-only", action="store_true", help="仅查看历史榜单，不执行新测速")
     parser.add_argument("--ip", default=None, help="配合 --report-only 离线指定要查询的静态 IP（如 1.2.3.4:1080）")
+    parser.add_argument("--list-airports", action="store_true", help="列出历史数据库中所有机场名与示例节点")
+    parser.add_argument(
+        "--merge-airport",
+        nargs=2,
+        metavar=("OLD", "NEW"),
+        help="将历史库中的旧机场名合并至新机场名（默认同时把节点名中的 OLD 替换为 NEW）",
+    )
+    parser.add_argument(
+        "--replace-text",
+        nargs=2,
+        metavar=("OLD_TEXT", "NEW_TEXT"),
+        help="配合 --merge-airport 使用，自定义节点名中的替换片段（如处理 悦通悦 -> [悦通] 悦）",
+    )
+    parser.add_argument(
+        "--keep-node-name",
+        action="store_true",
+        help="配合 --merge-airport 使用，仅改机场归属列，不改节点名文本",
+    )
+    parser.add_argument("--yes", action="store_true", help="配合 --merge-airport 跳过交互确认")
     args = parser.parse_args()
 
     conn = sqlite3.connect(DB_PATH)
@@ -680,15 +858,32 @@ def main():
     now_iso = now_dt.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
+        if args.list_airports:
+            handle_list_airports(conn)
+            return
+
+        if args.merge_airport:
+            handle_merge_airport(
+                conn,
+                args.merge_airport[0],
+                args.merge_airport[1],
+                replace_pair=args.replace_text,
+                keep_node_name=args.keep_node_name,
+                auto_yes=args.yes,
+            )
+            return
+
         if args.report_only:
             static_ip = args.ip
-            alive_set = None
-            airport_map = None
+            live_key_to_node = None
             if not static_ip:
                 try:
                     static_ip, _, all_nodes = discover_probe_and_nodes()
-                    alive_set = set(all_nodes)
                     airport_map = build_airport_map(all_nodes, args.airport)
+                    live_key_to_node = {
+                        make_node_key(n, airport_map[n], airport_map[n]): n
+                        for n in all_nodes
+                    }
                 except Exception:
                     row = conn.execute("SELECT static_ip FROM runs ORDER BY tested_at DESC LIMIT 1").fetchone()
                     if not row:
@@ -697,8 +892,8 @@ def main():
                     static_ip = row[0]
                     print(f"提示：未连接 Clash Verge，离线展示最近一次测速的静态 IP（{static_ip}）历史榜单。")
 
-            ip_ranking = query_ip_history_ranking(conn, static_ip, alive_set, now_ts, airport_map)
-            global_ranking, airport_summary = query_global_history_ranking(conn, alive_set, now_ts, airport_map)
+            ip_ranking = query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts)
+            global_ranking, airport_summary = query_global_history_ranking(conn, live_key_to_node, now_ts)
             picked, effective_cap = pick_diverse_nodes(ip_ranking)
             if picked:
                 export_recommendation_yaml(static_ip, now_iso, picked, effective_cap)
@@ -728,6 +923,10 @@ def main():
             sys.exit(1)
 
         airport_map = build_airport_map(all_nodes, args.airport)
+        live_key_to_node = {
+            make_node_key(n, airport_map[n], airport_map[n]): n
+            for n in all_nodes
+        }
         detected_airports = sorted({airport_map[n] for n in candidates})
         peak = is_peak_hour(now_dt)
 
@@ -759,7 +958,6 @@ def main():
                     print(f"  {f'{delay:.0f} ms' if delay is not None else '失败':<8} | [{airport_map[node]}] {node}")
                     time.sleep(SLEEP_BETWEEN_NODES)
 
-        # 整理全部候选节点本批次明细
         records = []
         for node in candidates:
             if node in phase2_samples and VERIFY_ROUNDS > 0:
@@ -774,9 +972,11 @@ def main():
                 phase = 1
 
             avg_ms, min_ms, max_ms, jitter_ms, eff_score = calc_single_run_eff_score(ok_delays, total_c, phase)
+            ap = airport_map[node]
             records.append({
-                "airport": airport_map[node],
+                "airport": ap,
                 "node_name": node,
+                "node_key": make_node_key(node, ap, ap),
                 "ok_count": len(ok_delays),
                 "total_count": total_c,
                 "avg_ms": avg_ms,
@@ -792,9 +992,8 @@ def main():
         run_id = save_run_to_db(conn, now_ts, now_iso, static_ip, peak, records, batch_median)
         print(f"\n已写入历史数据库（批次 #{run_id}，路径：{DB_PATH}）")
 
-        alive_set = set(all_nodes)
-        ip_ranking = query_ip_history_ranking(conn, static_ip, alive_set, now_ts, airport_map)
-        global_ranking, airport_summary = query_global_history_ranking(conn, alive_set, now_ts, airport_map)
+        ip_ranking = query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts)
+        global_ranking, airport_summary = query_global_history_ranking(conn, live_key_to_node, now_ts)
         picked, effective_cap = pick_diverse_nodes(ip_ranking)
 
         if picked:
