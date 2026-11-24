@@ -1,6 +1,7 @@
 参考网络配置修改留档自用。  
-通用JS覆写脚本：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ScriptsClash.js  
+Mihomo核JS覆写脚本：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/config/ClashVerge/Scripts.js  
 自定义规则Rules包含Policies（通用自定义，依据策略划分文件）、RuleSets（专项自定义，依据服务/厂商划分）、Rewrites（重写）。  
+电脑端静态IP链路测速脚本 bench_static_chain.py 两阶段扫描完成可查看四项输出报表（本次最优、当前 IP 历史最优、跨 IP 整体最优与机场底座榜、推荐精选池）。  
 
 # App配置下载
 Shadowrocket：https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/ShodowrocketConfig.conf  
