@@ -115,7 +115,7 @@ const USER_CONFIG = {
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  核心处理引擎                                                         ║
 // ╚═══════════════════════════════════════════════════════════════════════╝
-function main(config) {
+function main(config, profileName = "") {
   if (!config || !Array.isArray(config.proxies) || config.proxies.length === 0) {
     return config;
   }
@@ -321,7 +321,82 @@ function main(config) {
         ? [...new Set(rawStaticProxy.nodes.map(v => String(v ?? "").trim()).filter(Boolean))]
         : [];
       const validSet = new Set(validNormalNames);
-      const matchedPinned = pinnedNames.filter(n => validSet.has(n));
+            let matchedPinned = pinnedNames.filter(n => validSet.has(n));
+
+            // 精确匹配全未命中时（如从聚合订阅切回单机场订阅），按当前订阅名校验归属并去前缀复用精选节点
+            const cleanProfileName = String(profileName || "").trim();
+            if (matchedPinned.length === 0 && pinnedNames.length > 0 && cleanProfileName) {
+              const flagRegex = /(?:\uD83C[\uDDE6-\uDDFF]){2}/;
+              const flagGlobalRegex = /(?:\uD83C[\uDDE6-\uDDFF]){2}/g;
+              const leadingFlagsRegex = /^(?:(?:\uD83C[\uDDE6-\uDDFF]){2}|\s)+/;
+
+              const buildCoreKey = (flagSource, bodySource) => {
+                const flag = (flagSource.match(flagRegex) || [""])[0];
+                const body = bodySource
+                  .replace(flagGlobalRegex, "")
+                  .replace(/\s*·\s*/g, "·")
+                  .replace(/\s+/g, " ")
+                  .trim();
+                return `${flag}::${body}`;
+              };
+
+              const isAirportMatch = (prefix, prof) => {
+                const a = prefix.trim().toLowerCase();
+                const b = prof.trim().toLowerCase();
+                if (!a || !b) return false;
+                if (a === b) return true;
+                return a.length >= 2 && b.length >= 2 && (b.includes(a) || a.includes(b));
+              };
+
+              const extractPrefixAndRest = (name, prof) => {
+                const trimmed = name.trim();
+                const stripped = trimmed.replace(leadingFlagsRegex, "").trim();
+
+                // 1. 括号前缀（兼容 "[悦通] 🇭🇰 香港01" 与 "🇭🇰 [悦通] 香港01"）
+                let m = trimmed.match(/^[\[\【「(]\s*([^\]\】」)]{1,24}?)\s*[\]\】」)][\s|｜:：/·\-_]*/);
+                if (m) return { prefix: m[1].trim(), rest: trimmed.slice(m[0].length) };
+
+                m = stripped.match(/^[\[\【「(]\s*([^\]\】」)]{1,24}?)\s*[\]\】」)][\s|｜:：/·\-_]*/);
+                if (m) return { prefix: m[1].trim(), rest: stripped.slice(m[0].length) };
+
+                // 2. 国旗之前的前缀（如 "良心云 🇭🇰 香港01"）
+                const fm = trimmed.match(flagRegex);
+                if (fm && fm.index > 0) {
+                  const before = trimmed.slice(0, fm.index).replace(/^[\[\【「(\s]+|[\]\】」)\s|｜\-_:：/·]+$/g, "").trim();
+                  if (before) return { prefix: before, rest: trimmed.slice(fm.index) };
+                }
+
+                // 3. 显式分隔符前缀（如 "🇭🇰 良心云 | 香港01"）
+                m = stripped.match(/^([^|｜:：/]{1,20}?)\s*[|｜:：/]\s*/);
+                if (m) return { prefix: m[1].trim(), rest: stripped.slice(m[0].length) };
+
+                // 4. 空格/短横线前缀（如 "🇭🇰 良心云 香港01"）
+                m = stripped.match(/^([^\s\-_]{1,20})(?:\s+|\s*[-_]\s*)/);
+                if (m) return { prefix: m[1].trim(), rest: stripped.slice(m[0].length) };
+
+                // 5. 无分隔符直接拼接订阅名（如 "🇭🇰 良心云香港01"）
+                if (stripped.toLowerCase().startsWith(prof.toLowerCase())) {
+                  return { prefix: prof, rest: stripped.slice(prof.length).replace(/^[\s|｜:：/·\-_]+/, "") };
+                }
+
+                return null;
+              };
+
+              const liveKeyMap = new Map();
+              validNormalNames.forEach(nodeName => {
+                const key = buildCoreKey(nodeName, nodeName);
+                if (!liveKeyMap.has(key)) liveKeyMap.set(key, nodeName);
+              });
+
+              const fallbackMatched = [];
+              pinnedNames.forEach(pinned => {
+                const parsed = extractPrefixAndRest(pinned, cleanProfileName);
+                if (!parsed || !isAirportMatch(parsed.prefix, cleanProfileName)) return;
+                const matchedNode = liveKeyMap.get(buildCoreKey(pinned, parsed.rest));
+                if (matchedNode) fallbackMatched.push(matchedNode);
+              });
+              matchedPinned = [...new Set(fallbackMatched)];
+            }
 
       const targetRegionIds = parseRegionIds(rawStaticProxy.region ?? rawStaticProxy.regions);
       const regionNodes = [...new Set(
