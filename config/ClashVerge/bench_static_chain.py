@@ -31,14 +31,14 @@ INCLUDE_KEYWORDS = []
 EXCLUDE_KEYWORDS = []
 
 # 已知机场规范名（优先精准匹配，适合前缀与节点本体无空格/分隔符的情况）
-# 示例：KNOWN_AIRPORTS = ["悦通", "良心云"]
+# 示例：KNOWN_AIRPORTS = ["规范名1", "规范名2"]
 KNOWN_AIRPORTS = []
 
 # 机场别名映射（旧名 -> 规范名）：解决机场改名/缩写后历史记录自动合并
-# 示例：AIRPORT_ALIASES = {"旧机场名": "新机场名"}
-AIRPORT_ALIASES = {
-    "三毛机场": "三毛",
-}
+# 示例：AIRPORT_ALIASES = {
+#     "旧机场名": "新机场名",
+# }
+AIRPORT_ALIASES = {}
 
 DEFAULT_AIRPORT = "未标注机场"             # 单机场订阅且未传 --airport 时的默认归属名
 
