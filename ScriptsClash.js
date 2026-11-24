@@ -1,10 +1,10 @@
 // =========================================================================
-// Mihomo / Clash Verge 全局预处理脚本 v3.1
-// 最新更新：2026-11-23
+// Mihomo / Clash Verge 全局预处理脚本 v3.2
+// 最新更新：2026-11-24
 // =========================================================================
 // 功能概览：
 // 1. 策略与规则联动：统一由 rulesets 驱动路由分流与加密 DNS 出口，确保策略一致
-// 2. 双模式链式代理：支持按地区编号生成可见自动链式测速组，以及多地区链式手动前置组
+// 2. 双模式链式代理：支持精选池 nodes 优先、region 地区编号兜底、手动多地区前置组与隐藏单探针
 // 3. 节点清洗与分类：按关键字与国家代码词边界自动标注国旗，过滤非代理信息节点与空地区组
 // =========================================================================
 // ╔═══════════════════════════════════════════════════════════════════════╗
@@ -21,9 +21,10 @@ const USER_CONFIG = {
     username: "",                    // 鉴权用户名（无鉴权可留空）
     password: "",                    // 鉴权密码（无鉴权可留空）
     udp: true,                       // 是否启用 UDP 转发
-    region: ""                       // 自定义配置，「⛓️ 静态链路自动」对应的地区编号，多个用逗号隔开（如 "1,3"）；留空或未命中则跳过生成
+    region: "",                      // (自定义配置)备用：nodes 留空时按地区编号生成「⛓️ 静态链路自动」（如 "1,3"），未命中则跳过
+    nodes: []                        // (自定义配置)精选池：由外部低并发测速脚本产出的节点名列表，优先级高于 region
   },
-  enableAutoChain: true,             // 是否启用「⛓️ 静态链路自动」按指定地区生成链式测速组
+  enableAutoChain: true,             // 是否启用「⛓️ 静态链路自动」
 
   // 2. 地区策略组定义（id 为固定编号，供 static-proxy.region 指定；按国旗聚合，自动生成隐藏 url-test 组）
   regionGroups: [
@@ -59,7 +60,7 @@ const USER_CONFIG = {
     { id: "AI",               group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/RuleSets/AI.list" },
     { id: "YouTube",          group: "▶️ YouTube",  url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.list" },
     { id: "GoogleCNProxyIP",  group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list" },
-    { id: "Google",           group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.list" },
+    { id: "Google",           group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Google/Google.list" },
     { id: "Microsoft",        group: "🔘 Option",   url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list" },
     { id: "Apple",            group: "🔘 Option",   url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list" },
     { id: "XiaoHongShu",      group: "🌎️ IPmodify", url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list" },
@@ -162,6 +163,8 @@ function main(config) {
   const staticAutoGroupName = "⛓️ 静态链路自动";
   const manualChainPrefix = "🔗 静态 · ";
   const autoChainPrefix = "🔗 静态链路 · ";
+  const probeGroupName = "🧪 测速前置";
+  const probeProxyPrefix = "🧪 静态测速探针|";
 
   // 读取 static-proxy 配置块，并从最终配置中清理该临时字段（优先读取 Merge、兜底读取 USER_CONFIG）
   const rawStaticProxy = config[USER_CONFIG.staticProxyKey] || USER_CONFIG.staticProxy;
@@ -196,7 +199,18 @@ function main(config) {
     )];
   };
 
+  // 拼接静态 IP 唯一标识（IP:端口），用于隐藏测速探针向外部脚本暴露当前静态 IP
+  const formatStaticTargetId = (node) => {
+    const server = String(node.server ?? "").trim();
+    const port = Number(node.port);
+    const host = server.includes(":") && !server.startsWith("[") ? `[${server}]` : server;
+    return `${host}:${port}`;
+  };
+
   const hasStaticIP = isValidStaticNode(rawStaticProxy);
+  const probeProxyName = hasStaticIP
+    ? `${probeProxyPrefix}${formatStaticTargetId(rawStaticProxy)}`
+    : "";
 
   // -------------------------------------------------------------------------
   // 3. 节点地区识别与国旗标注
@@ -271,10 +285,20 @@ function main(config) {
       "dialer-proxy": _ignoreDialer,
       region: _ignoreRegion,
       regions: _ignoreRegions,
+      nodes: _ignoreNodes,
       ...staticTemplate
     } = rawStaticProxy;
     if (staticTemplate.username === "") delete staticTemplate.username;
     if (staticTemplate.password === "") delete staticTemplate.password;
+
+    // 隐藏测速单探针：供外部低并发脚本切换前置并实测端到端延迟，不干扰日常流量
+    if (validNormalNames.length > 0) {
+      config.proxies.push({
+        ...staticTemplate,
+        name: probeProxyName,
+        "dialer-proxy": probeGroupName
+      });
+    }
 
     // 手动前置链式入口：为 📶 Auto 与各非空地区组建立链式代理，供「🏠 静态IP(手动前置)」组内横向测速与切换
     const manualChainTargets = [
@@ -291,14 +315,22 @@ function main(config) {
       });
     });
 
-    // 指定地区全节点链式入口：仅命中有效地区编号且存在节点时生成，未命中则跳过「⛓️ 静态链路自动」
+    // 自动链式优选源：优先使用 static-proxy.nodes 精选池；留空或全部未命中时回退至 region 地区编号
     if (USER_CONFIG.enableAutoChain) {
+      const pinnedNames = Array.isArray(rawStaticProxy.nodes)
+        ? [...new Set(rawStaticProxy.nodes.map(v => String(v ?? "").trim()).filter(Boolean))]
+        : [];
+      const validSet = new Set(validNormalNames);
+      const matchedPinned = pinnedNames.filter(n => validSet.has(n));
+
       const targetRegionIds = parseRegionIds(rawStaticProxy.region ?? rawStaticProxy.regions);
-      const autoChainSourceNodes = [...new Set(
+      const regionNodes = [...new Set(
         activeRegionGroups
           .filter(g => targetRegionIds.includes(g.id))
           .flatMap(g => g.nodes)
       )];
+
+      const autoChainSourceNodes = matchedPinned.length > 0 ? matchedPinned : regionNodes;
 
       autoChainSourceNodes.forEach(nodeName => {
         const autoChainNodeName = `${autoChainPrefix}${nodeName}`;
@@ -352,14 +384,14 @@ function main(config) {
       proxies: manualChainNodeNames
     }] : []),
 
-    // 指定地区静态链路自动测速组（可见，lazy: true 避免后台对静态 IP 空转测速，如节点少可改为 tolerance: 20 降低切换滞后）
+    // 静态链路自动测速组（可见，lazy: true 避免后台对静态 IP 空转测速，tolerance: 20 降低切换滞后）
     ...(hasAutoStaticGroup ? [{
       name: staticAutoGroupName,
       type: "url-test",
       url: "https://www.gstatic.com/generate_204",
       interval: 300,
       timeout: 10000,
-      tolerance: 50,
+      tolerance: 20,
       lazy: true,
       "expected-status": "204",
       proxies: autoChainNodeNames
@@ -427,7 +459,15 @@ function main(config) {
     },
 
     // 后台隐藏地区自动测速组
-    ...activeRegionGroups.map(g => createHiddenRegionUrlTest(g.auto, g.nodes))
+    ...activeRegionGroups.map(g => createHiddenRegionUrlTest(g.auto, g.nodes)),
+
+    // 隐藏测速前置选择器（仅外部低并发脚本通过 REST API 调度，面板不可见）
+    ...(hasStaticIP && validNormalNames.length > 0 ? [{
+      name: probeGroupName,
+      type: "select",
+      hidden: true,
+      proxies: validNormalNames
+    }] : [])
   ];
 
   // -------------------------------------------------------------------------
