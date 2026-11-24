@@ -329,7 +329,7 @@ def discover_probe_and_nodes():
     if not probe_proxy_name:
         raise RuntimeError(
             f"未找到前缀为「{PROBE_PROXY_PREFIX}」的隐藏探针。\n"
-            "请确认已更新 ScriptsClash.js 至 v3.2、在 MergeClash.yaml 填好有效静态 IP 并重载订阅。"
+            "请确认已更新 Scripts.js 至 v3.2、在 Merge.yaml 填好有效静态 IP 并重载订阅。"
         )
 
     probe_group_info = proxies_dict.get(PROBE_GROUP)
@@ -736,7 +736,7 @@ def export_recommendation_yaml(static_ip, now_iso, picked, effective_cap):
         f"# 生成时间: {now_iso}",
         f"# 目标静态 IP: {static_ip}",
         f"# 单机场上限: {effective_cap}（精选池总数: {len(picked)}）",
-        "# 说明: 请人工核对后手动复制到本地 MergeClash.yaml 的 static-proxy 下，不会自动改动原存档。",
+        "# 说明: 请人工核对后手动复制到本地 Merge.yaml 的 static-proxy 下，不会自动改动原存档。",
         "  nodes:",
     ]
     for item in picked:
