@@ -370,7 +370,6 @@ def match_probe_target(probes, target):
     opts = ", ".join(f"{p['name']} ({p['static_ip']})" for p in probes)
     raise RuntimeError(f"未找到目标「{t}」。当前可用静态 IP：{opts}")
 
-
 def choose_probes_for_benchmark(probes, target_arg, run_all):
     """解析本次要测速的静态 IP 列表：多探针且未指定目标时在交互终端提供菜单。"""
     if run_all:
@@ -383,23 +382,28 @@ def choose_probes_for_benchmark(probes, target_arg, run_all):
     print("检测到多个静态 IP 探针：")
     for idx, p in enumerate(probes, 1):
         print(f"  {idx}. {p['name']} ({p['static_ip']})")
-    print("  a. 全部顺序测速")
+    print("  回车 / a. 全部顺序测速")
+    print("  0 / q / Ctrl+C. 取消")
 
     if not sys.stdin.isatty():
         print("\n非交互环境请通过 --target <名称或IP> 指定单个目标，或传 --all 顺序全测。")
         sys.exit(1)
 
-    ans = input("\n请选择要测速的编号（直接回车取消）: ").strip().lower()
-    if not ans:
+    try:
+        ans = input("\n请选择要测速的编号（直接回车全测，0/q 或 Ctrl+C 取消）: ").strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        print("\n已取消。")
+        sys.exit(0)
+
+    if not ans or ans in ("a", "all"):
+        return probes
+    if ans in ("0", "q", "quit", "exit"):
         print("已取消。")
         sys.exit(0)
-    if ans in ("a", "all"):
-        return probes
     if ans.isdigit() and 1 <= int(ans) <= len(probes):
         return [probes[int(ans) - 1]]
     print("无效选择。")
     sys.exit(1)
-
 
 def test_one_node(probe_proxy_name, node_name):
     """将隐藏前置组切换至目标机场节点，再探测「机场节点 -> 静态 IP -> TEST_URL」端到端延迟。"""
