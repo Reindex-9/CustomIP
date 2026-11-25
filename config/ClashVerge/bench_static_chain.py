@@ -11,8 +11,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
 # =================== 版本信息 =================
-# v0.1 2026-11-24
+# v0.2 2026-11-26  适配 Scripts v3.3 多静态 IP、达标全量导出与双端格式化输出
 
 # ================= 基础配置区 =================
 CONTROLLER = "http://127.0.0.1:9097"      # Clash Verge 外部控制地址
@@ -25,57 +26,56 @@ TEST_URL = "https://www.gstatic.com/generate_204"
 EXPECTED_STATUS = "204"
 TIMEOUT_MS = 5000                         # 单次测速超时（毫秒）
 
-# 可选初筛过滤（留空 [] 则测全部有效节点）
-# 示例：INCLUDE_KEYWORDS = ["🇺🇸", "🇯🇵", "🇭🇰", "🇸🇬"]
+# 测速候选初筛（留空 [] 测全量；可按需在此排除高倍率专线，如 EXCLUDE_KEYWORDS = ["3x", "5x", "IEPL"]）
 INCLUDE_KEYWORDS = []
 EXCLUDE_KEYWORDS = []
 
 # 已知机场规范名（优先精准匹配，适合前缀与节点本体无空格/分隔符的情况）
-# 示例：KNOWN_AIRPORTS = ["规范名1", "规范名2"]
 KNOWN_AIRPORTS = []
 
-# 机场别名映射（旧名 -> 规范名）：解决机场改名/缩写后历史记录自动合并
-# 示例：AIRPORT_ALIASES = {
-#     "旧机场名": "新机场名",
-# }
+# 机场别名映射（旧名 -> 规范名）：机场改名或换缩写后自动合并历史记录
 AIRPORT_ALIASES = {}
 
 DEFAULT_AIRPORT = "未标注机场"             # 单机场订阅且未传 --airport 时的默认归属名
 
-# 测速节奏与复测参数
-SLEEP_BETWEEN_NODES = 0.30                # 每次探测后休眠（秒），保护静态 IP
+# 测速节奏与两阶段复测参数（严格并发=1，降低静态 IP 风控风险）
+SLEEP_BETWEEN_NODES = 0.30                # 每次探测后休眠（秒）
 SWITCH_SETTLE_SEC = 0.08                  # 切换隐藏前置后等待（秒）
-TOP_N_VERIFY = 15                         # 进入第二阶段复测的候选数
+TOP_N_VERIFY = 15                         # 第一阶段胜出后进入第二阶段复测的候选数
 VERIFY_ROUNDS = 3                         # 第二阶段交叉复测轮数
 
-# 历史评分算法参数
-HALF_LIFE_IP_DAYS = 14.0                  # 当前静态 IP 历史半衰期（天）
-HALF_LIFE_GLOBAL_DAYS = 21.0              # 跨 IP 整体历史半衰期（天）
+# 历史评分算法参数（单 IP 历史分单位近似毫秒，越低越好）
+HALF_LIFE_IP_DAYS = 14.0                  # 单静态 IP 历史半衰期（天）
+HALF_LIFE_GLOBAL_DAYS = 21.0              # 跨 IP 通用底座历史半衰期（天）
 PEAK_WEIGHT = 1.4                         # 晚高峰（19:30-23:30）批次权重
 NORMAL_WEIGHT = 1.0                       # 非晚高峰批次权重
-BAYES_PRIOR_M = 1.5                       # 贝叶斯平滑先验权重（等效测试次数）
+BAYES_PRIOR_M = 1.0                       # 贝叶斯平滑先验权重（防止新节点仅测 1 次偶然偏快直接霸榜）
 FAIL_PENALTY_MS = 400.0                   # 部分丢包折算延迟惩罚
 ALL_FAIL_SCORE_MS = 1500.0                # 全超时等效惩罚分
 PHASE1_JITTER_FLOOR_MS = 15.0             # 第一阶段单次测速的保守抖动修正
 
-# 最终精选池参数
-FINAL_PICK = 8                            # 输出进 nodes 的推荐节点数
-MAX_PER_AIRPORT = 3                       # >=3 家机场时，单机场最大席位数
-DIVERSITY_SCORE_RATIO = 1.65              # 跨机场多样性兜底质量上限（相对榜首分倍数）
-MIN_HISTORY_AVAIL = 0.50                  # 入选精选池的最低历史可用率
+# 达标筛选与前端排序参数（导出 nodes 本身不设总上限，由客户端按前 15 个截断显示）
+# 达标条件：历史可用率 >= 70% 且 历史分 <= min(650, max(榜首分 * 1.30, 榜首分 + 60))
+MIN_HISTORY_AVAIL = 0.70                  # 达标最低历史可用率
+QUALIFY_SCORE_RATIO = 1.30                # 相对榜首分的倍数宽容上限（适配欧美等高延迟 IP）
+QUALIFY_SCORE_ADD_MS = 60.0               # 相对榜首分的绝对宽容值（适配港日等低延迟 IP）
+QUALIFY_MAX_SCORE_MS = 650.0              # 达标历史分绝对封顶（防整体网络劣化时矮子里拔将军）
+DISPLAY_TOP_LIMIT = 15                    # 客户端面板单组显示上限（用于规划前 15 位的跨机场均衡）
+DISPLAY_SOFT_CAP_PER_AIRPORT = 5          # >=3 家机场时，前 15 展示位中单机场软上限（超出部分排至 16+ 位，不丢弃）
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(SCRIPT_DIR, "static_chain_history.db")
 EXPORT_YAML_PATH = os.path.join(SCRIPT_DIR, "latest_recommendation.yaml")
+EXPORT_JS_PATH = os.path.join(SCRIPT_DIR, "latest_recommendation_flclash.js")
 # ==============================================
 
-# 强制绕过系统代理，防止请求本地 127.0.0.1 进入 Clash 环路
+# 强制绕过系统代理，防止访问本地 127.0.0.1 控制接口进入 Clash 环路
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 FLAG_RE = re.compile(r"[\U0001F1E6-\U0001F1FF]{2}")
 LEADING_FLAGS_RE = re.compile(r"^(?:[\U0001F1E6-\U0001F1FF]{2}|\s)+")
 
-# 避免单机场订阅里把常见地名或线路词误识别为机场名
+# 地名与常见线路词白名单，防止单机场订阅把地区词误识别为机场前缀
 NON_AIRPORT_TOKENS = {
     "香港", "台湾", "台灣", "澳门", "澳門", "日本", "东京", "大阪", "新加坡", "狮城",
     "美国", "美國", "洛杉矶", "西雅图", "圣何塞", "纽约", "芝加哥", "凤凰城", "俄勒冈", "弗吉尼亚",
@@ -113,7 +113,7 @@ def get_aliases_for_canonical(canonical_airport):
 
 
 def extract_core_name(node_name, raw_airport, canonical_airport):
-    """剥离机场前缀与国旗，提取稳定的核心节点名，兼容改前缀与单机场/聚合订阅互切。"""
+    """剥离机场前缀与国旗，提取稳定核心名，使节点在换前缀或单/聚合订阅互切时能延续历史记录。"""
     s = LEADING_FLAGS_RE.sub("", node_name).strip()
 
     tokens = set()
@@ -122,7 +122,7 @@ def extract_core_name(node_name, raw_airport, canonical_airport):
         if t_clean and t_clean != DEFAULT_AIRPORT:
             tokens.add(t_clean)
 
-    # 按长度降序尝试剥离前缀（避免短名抢先截断长名，如“良心云”截断“良心云机场”）
+    # 按长度降序剥离，防止短词抢先截断长词（如「XX」截断「XX机场」）
     for tok in sorted(tokens, key=len, reverse=True):
         esc = re.escape(tok)
         m_bracket = re.match(rf"^[\[\【「(]\s*{esc}\s*[\]\】」)][\s|｜:：/·\-_]*", s)
@@ -141,7 +141,7 @@ def extract_core_name(node_name, raw_airport, canonical_airport):
 
 
 def make_node_key(node_name, raw_airport, canonical_airport=None):
-    """构造跨前缀变化与单/聚合订阅通用的稳定节点主键：规范机场名::国旗::核心节点名。"""
+    """构造稳定节点主键（规范机场名::国旗::核心节点名），用于历史评分归并。"""
     canon = canonical_airport if canonical_airport is not None else canonicalize_airport(raw_airport)
     flag_match = FLAG_RE.search(node_name)
     flag = flag_match.group(0) if flag_match else ""
@@ -224,7 +224,7 @@ def is_non_airport_token(token):
 
 
 def build_airport_map(node_names, forced_airport=None):
-    """为当前订阅节点推断规范机场名：支持 --airport、KNOWN_AIRPORTS/别名表与 Sub-Store 前缀识别。"""
+    """推断每个节点的规范机场名：优先级为 --airport > 已知机场/别名表 > 括号/国旗前/分隔符前缀。"""
     if forced_airport:
         canon = canonicalize_airport(forced_airport)
         return {n: canon for n in node_names}
@@ -250,7 +250,7 @@ def build_airport_map(node_names, forced_airport=None):
         node_flag = flag_match.group(0) if flag_match else ""
         stripped = LEADING_FLAGS_RE.sub("", name).strip()
 
-        # 1. 优先匹配已知机场名 / 别名（按长度降序）
+        # 1. 优先匹配已知机场名或别名
         matched_known = None
         for known in known_sorted:
             esc = re.escape(known)
@@ -266,7 +266,7 @@ def build_airport_map(node_names, forced_airport=None):
             raw_result[name] = matched_known
             continue
 
-        # 2. 优先匹配括号前缀（同时兼容 [悦通] 悦·🇭🇰 香港01 与 🇭🇰 [悦通] 悦·香港01）
+        # 2. 括号前缀（兼容 "[机场] 🇭🇰 香港01" 与 "🇭🇰 [机场] 香港01"）
         m_bracket = (
             re.match(r"^[\[\【「(]([^\]\】」)]{1,24})[\]\】」)]", name.strip())
             or re.match(r"^[\[\【「(]([^\]\】」)]{1,24})[\]\】」)]", stripped)
@@ -277,7 +277,7 @@ def build_airport_map(node_names, forced_airport=None):
                 raw_result[name] = cand
                 continue
 
-        # 3. 位于国旗之前的前缀（典型 Sub-Store：机场A 🇭🇰 香港01）
+        # 3. 国旗之前的前缀（典型 Sub-Store：机场A 🇭🇰 香港01）
         if flag_match and flag_match.start() > 0:
             before_flag = name[:flag_match.start()].strip()
             before_clean = re.sub(r"^[\[\【「(\s]+|[\]\】」)\s|\-_:：/·]+$", "", before_flag).strip()
@@ -285,7 +285,7 @@ def build_airport_map(node_names, forced_airport=None):
                 raw_result[name] = before_clean
                 continue
 
-        # 4. 剥离前导国旗后的显式分隔符（| ｜ ： : /）
+        # 4. 显式分隔符前缀（| ｜ : ： /）
         m_delim = re.match(r"^([^|｜:：/]{1,20}?)\s*[|｜:：/]\s*\S", stripped)
         if m_delim:
             cand = m_delim.group(1).strip()
@@ -293,7 +293,7 @@ def build_airport_map(node_names, forced_airport=None):
                 raw_result[name] = cand
                 continue
 
-        # 5. 弱分隔符（空格 / - / _）：结合跨国旗复现校验防止误判单机场地名
+        # 5. 弱分隔符（空格 / - / _）：后续通过跨国旗复现校验，防止误判地名
         m_weak = re.match(r"^([^\s\-_]{1,20})(?:\s+|\s*[-_]\s*)\S", stripped)
         if m_weak:
             cand = m_weak.group(1).strip()
@@ -315,33 +315,94 @@ def build_airport_map(node_names, forced_airport=None):
     return {n: canonicalize_airport(ap) for n, ap in raw_result.items()}
 
 
-def discover_probe_and_nodes():
-    """自动从 Clash Verge API 发现当前生效的静态 IP 探针与可用候选节点。"""
+def discover_probes_and_nodes():
+    """自动发现全部生效的静态 IP 隐藏探针与候选节点（兼容 v3.3「名称|键」及 v3.2 单键格式）。"""
     _, all_proxies_resp = api_request("GET", "/proxies", timeout=8)
     proxies_dict = (all_proxies_resp or {}).get("proxies", {})
 
-    probe_proxy_name = None
+    probes = []
     for pname in proxies_dict.keys():
-        if pname.startswith(PROBE_PROXY_PREFIX):
-            probe_proxy_name = pname
-            break
+        if not pname.startswith(PROBE_PROXY_PREFIX):
+            continue
+        rest = pname[len(PROBE_PROXY_PREFIX):].strip()
+        if "|" in rest:
+            display_name, static_ip = rest.split("|", 1)
+            display_name = display_name.strip() or static_ip.strip()
+            static_ip = static_ip.strip()
+        else:
+            display_name = rest
+            static_ip = rest
+        probes.append({
+            "name": display_name,
+            "static_ip": static_ip,
+            "proxy_name": pname,
+        })
 
-    if not probe_proxy_name:
+    if not probes:
         raise RuntimeError(
             f"未找到前缀为「{PROBE_PROXY_PREFIX}」的隐藏探针。\n"
-            "请确认已更新 Scripts.js 至 v3.2、在 Merge.yaml 填好有效静态 IP 并重载订阅。"
+            "请确认已更新 Scripts.js 至 v3.3、在 Merge.yaml 填好有效静态 IP 并重载订阅。"
         )
 
     probe_group_info = proxies_dict.get(PROBE_GROUP)
     if not probe_group_info or not isinstance(probe_group_info.get("all"), list):
-        raise RuntimeError(f"未找到隐藏策略组「{PROBE_GROUP}」，请确认已重载 v3.2 脚本。")
+        raise RuntimeError(f"未找到隐藏策略组「{PROBE_GROUP}」，请确认已重载 Scripts v3.3。")
 
-    static_ip = probe_proxy_name[len(PROBE_PROXY_PREFIX):].strip()
     all_nodes = probe_group_info.get("all", [])
-    return static_ip, probe_proxy_name, all_nodes
+    return probes, all_nodes
+
+
+def match_probe_target(probes, target):
+    """按显示名、存储键或子串唯一匹配目标静态 IP 探针。"""
+    t = target.strip()
+    exact = [p for p in probes if p["name"] == t or p["static_ip"] == t]
+    if len(exact) == 1:
+        return exact[0]
+    if len(exact) > 1:
+        raise RuntimeError(f"目标「{t}」命中多个探针，请使用更精确的名称或 IP:端口。")
+
+    fuzzy = [p for p in probes if t.lower() in p["name"].lower() or t.lower() in p["static_ip"].lower()]
+    if len(fuzzy) == 1:
+        return fuzzy[0]
+    if len(fuzzy) > 1:
+        opts = ", ".join(f"{p['name']} ({p['static_ip']})" for p in fuzzy)
+        raise RuntimeError(f"目标「{t}」匹配不唯一：{opts}")
+    opts = ", ".join(f"{p['name']} ({p['static_ip']})" for p in probes)
+    raise RuntimeError(f"未找到目标「{t}」。当前可用静态 IP：{opts}")
+
+
+def choose_probes_for_benchmark(probes, target_arg, run_all):
+    """解析本次要测速的静态 IP 列表：多探针且未指定目标时在交互终端提供菜单。"""
+    if run_all:
+        return probes
+    if target_arg:
+        return [match_probe_target(probes, target_arg)]
+    if len(probes) == 1:
+        return probes
+
+    print("检测到多个静态 IP 探针：")
+    for idx, p in enumerate(probes, 1):
+        print(f"  {idx}. {p['name']} ({p['static_ip']})")
+    print("  a. 全部顺序测速")
+
+    if not sys.stdin.isatty():
+        print("\n非交互环境请通过 --target <名称或IP> 指定单个目标，或传 --all 顺序全测。")
+        sys.exit(1)
+
+    ans = input("\n请选择要测速的编号（直接回车取消）: ").strip().lower()
+    if not ans:
+        print("已取消。")
+        sys.exit(0)
+    if ans in ("a", "all"):
+        return probes
+    if ans.isdigit() and 1 <= int(ans) <= len(probes):
+        return [probes[int(ans) - 1]]
+    print("无效选择。")
+    sys.exit(1)
 
 
 def test_one_node(probe_proxy_name, node_name):
+    """将隐藏前置组切换至目标机场节点，再探测「机场节点 -> 静态 IP -> TEST_URL」端到端延迟。"""
     group_enc = urllib.parse.quote(PROBE_GROUP, safe="")
     probe_enc = urllib.parse.quote(probe_proxy_name, safe="")
 
@@ -370,6 +431,7 @@ def test_one_node(probe_proxy_name, node_name):
 
 
 def calc_single_run_eff_score(ok_delays, total_count, phase):
+    """单次综合等效延迟分 = 均延 + 0.5*抖动 + 丢包率*惩罚分（全超时返回固定高惩罚分）。"""
     ok_count = len(ok_delays)
     if ok_count == 0:
         return None, None, None, None, ALL_FAIL_SCORE_MS
@@ -383,7 +445,7 @@ def calc_single_run_eff_score(ok_delays, total_count, phase):
 
 
 def compute_relative_scores(records):
-    """计算同批次相对分（0-100，越高越好），用于消除不同静态 IP 基准延迟差异以做跨 IP 统计。"""
+    """计算同批次相对分（0-100，60% 排名分 + 40% 相对中位速度优势），消除不同静态 IP 的物理基准延迟差异。"""
     valid_scores = [r["eff_score"] for r in records if r["ok_count"] > 0]
     batch_median = statistics.median(valid_scores) if valid_scores else None
 
@@ -450,8 +512,16 @@ def save_run_to_db(conn, now_ts, now_iso, static_ip, is_peak, records, batch_med
     return run_id
 
 
+def get_last_tested_iso(conn, static_ip):
+    row = conn.execute(
+        "SELECT tested_at_iso FROM runs WHERE static_ip = ? ORDER BY tested_at DESC LIMIT 1",
+        (static_ip,),
+    ).fetchone()
+    return row[0] if row else None
+
+
 def query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts):
-    """按归一化主键计算当前静态 IP 的历史最优榜（时间衰减 + 晚高峰加权 + 贝叶斯平滑）。"""
+    """按归一化主键计算单静态 IP 历史榜（指数时间衰减 + 晚高峰加权 + 贝叶斯平滑）。"""
     rows = conn.execute(
         """
         SELECT s.node_name, s.airport, s.ok_count, s.total_count, s.avg_ms, s.jitter_ms,
@@ -513,6 +583,7 @@ def query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts):
         w_eff = e["sum_w_eff"] / w
         w_avail = e["sum_w_avail"] / w
         w_avg = (e["sum_w_avg"] / e["sum_w_ok"]) if e["sum_w_ok"] > 0 else None
+        # 样本量少时向全局中位数收缩，减少偶发快/慢测速带来的排名震荡
         bayes_score = (w * w_eff + BAYES_PRIOR_M * global_prior) / (w + BAYES_PRIOR_M)
         ranking.append({
             "node_key": e["node_key"],
@@ -527,7 +598,8 @@ def query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts):
             "last_avg": e["last_avg"],
         })
 
-    ranking.sort(key=lambda x: (0 if x["avail"] >= MIN_HISTORY_AVAIL else 1, x["history_score"]))
+    # 排序优先级：达标可用率组 > 有存活记录组 > 全超时组；组内按历史分升序
+    ranking.sort(key=lambda x: (0 if x["avail"] >= MIN_HISTORY_AVAIL else (1 if x["avail"] > 0 else 2), x["history_score"], -x["avail"]))
     return ranking
 
 
@@ -613,49 +685,122 @@ def query_global_history_ranking(conn, live_key_to_node, now_ts):
     return node_ranking, airport_summary
 
 
-def pick_diverse_nodes(ip_ranking):
-    """按自适应单机场上限 + 质量兜底挑选最终推荐精选池。"""
-    usable = [r for r in ip_ranking if r["avail"] >= MIN_HISTORY_AVAIL]
-    if not usable:
-        return [], 0
+def select_recommended_nodes(ip_ranking):
+    """
+    达标全量筛选（不设输出总上限）+ 无达标机场最优兜底 + 前 15 展示位多机场均衡排序：
+    1. 达标池：保留全部满足可用率与分数界限的节点
+    2. 机场兜底：无达标节点但非全超时（avail > 0）的机场保留最优 1 个；全超时机场跳过
+    3. 排序布局：[前 15 均衡展示区] -> [其余达标节点] -> [机场兜底节点]
+       同一机场内全程严格按历史分从优到劣排列，保证切回单机场时截取前 15 个即为该机场最优
+    """
+    alive = [r for r in ip_ranking if r["avail"] > 0]
+    if not alive:
+        return [], {
+            "best_score": None,
+            "threshold": None,
+            "qualified_count": 0,
+            "fallback_count": 0,
+            "soft_cap": 0,
+        }
 
-    unique_airports = {r["airport"] for r in usable}
-    if len(unique_airports) <= 1:
-        effective_cap = FINAL_PICK
-    elif len(unique_airports) == 2:
-        effective_cap = max(4, math.ceil(FINAL_PICK / 2.0))
+    # 阶段 1：计算动态达标阈值并收集全部达标节点
+    avail_ok = [r for r in alive if r["avail"] >= MIN_HISTORY_AVAIL]
+    if avail_ok:
+        best_score = min(r["history_score"] for r in avail_ok)
+        threshold = min(
+            QUALIFY_MAX_SCORE_MS,
+            max(best_score * QUALIFY_SCORE_RATIO, best_score + QUALIFY_SCORE_ADD_MS),
+        )
+        qualified = [
+            {**r, "pick_status": "qualified"}
+            for r in avail_ok
+            if r["history_score"] <= threshold
+        ]
     else:
-        effective_cap = MAX_PER_AIRPORT
+        best_score = None
+        threshold = None
+        qualified = []
 
-    best_score = usable[0]["history_score"]
-    score_ceiling = best_score * DIVERSITY_SCORE_RATIO
+    qualified_airports = {r["airport"] for r in qualified}
 
-    picked = []
-    picked_keys = set()
-    airport_counts = {}
+    # 阶段 2：为无达标节点但存在存活记录的机场挑选唯一最优兜底节点
+    alive_by_airport = {}
+    for r in alive:
+        alive_by_airport.setdefault(r["airport"], []).append(r)
 
-    for item in usable:
-        if len(picked) >= FINAL_PICK:
+    fallbacks = []
+    for ap, items in alive_by_airport.items():
+        if ap in qualified_airports:
+            continue
+        items_sorted = sorted(
+            items,
+            key=lambda x: (0 if x["avail"] >= MIN_HISTORY_AVAIL else 1, x["history_score"], -x["avail"]),
+        )
+        fallbacks.append({**items_sorted[0], "pick_status": "fallback"})
+
+    fallbacks.sort(
+        key=lambda x: (0 if x["avail"] >= MIN_HISTORY_AVAIL else 1, x["history_score"], -x["avail"])
+    )
+
+    # 阶段 3：仅对前 DISPLAY_TOP_LIMIT 位施加单机场软上限以平衡聚合展示，超出节点排至后段而非丢弃
+    if len(qualified_airports) <= 1:
+        soft_cap = DISPLAY_TOP_LIMIT
+    elif len(qualified_airports) == 2:
+        soft_cap = max(8, math.ceil(DISPLAY_TOP_LIMIT / 2.0))
+    else:
+        soft_cap = DISPLAY_SOFT_CAP_PER_AIRPORT
+
+    front_picked = []
+    front_keys = set()
+    ap_counts = {}
+
+    for item in qualified:
+        if len(front_picked) >= DISPLAY_TOP_LIMIT:
             break
-        if item["history_score"] > score_ceiling:
-            continue
         ap = item["airport"]
-        if airport_counts.get(ap, 0) >= effective_cap:
+        if ap_counts.get(ap, 0) >= soft_cap:
             continue
-        picked.append(item)
-        picked_keys.add(item["node_key"])
-        airport_counts[ap] = airport_counts.get(ap, 0) + 1
+        front_picked.append(item)
+        front_keys.add(item["node_key"])
+        ap_counts[ap] = ap_counts.get(ap, 0) + 1
 
-    if len(picked) < FINAL_PICK:
-        for item in usable:
-            if len(picked) >= FINAL_PICK:
-                break
-            if item["node_key"] in picked_keys:
-                continue
-            picked.append(item)
-            picked_keys.add(item["node_key"])
+    remaining_qualified = [item for item in qualified if item["node_key"] not in front_keys]
+    ordered = front_picked + remaining_qualified + fallbacks
 
-    return picked, effective_cap
+    meta = {
+        "best_score": best_score,
+        "threshold": threshold,
+        "qualified_count": len(qualified),
+        "fallback_count": len(fallbacks),
+        "soft_cap": soft_cap,
+    }
+    return ordered, meta
+
+
+def handle_list_targets(conn):
+    print("当前 Clash Verge 生效探针：")
+    try:
+        probes, _ = discover_probes_and_nodes()
+        for idx, p in enumerate(probes, 1):
+            last_iso = get_last_tested_iso(conn, p["static_ip"]) or "尚无测速记录"
+            print(f"  {idx}. {p['name']} | 存储键: {p['static_ip']} | 最近测速: {last_iso}")
+    except Exception as e:
+        print(f"  （未连接 Clash Verge 或无探针：{e}）")
+
+    rows = conn.execute(
+        """
+        SELECT static_ip, COUNT(*) AS run_cnt, MAX(tested_at_iso) AS last_time
+        FROM runs
+        GROUP BY static_ip
+        ORDER BY MAX(tested_at) DESC
+        """
+    ).fetchall()
+    print("\n历史数据库已记录静态 IP：")
+    if not rows:
+        print("  暂无记录。")
+    else:
+        for ip, run_cnt, last_time in rows:
+            print(f"  - {ip} | 测速 {run_cnt} 次 | 最近: {last_time}")
 
 
 def handle_list_airports(conn):
@@ -678,7 +823,7 @@ def handle_list_airports(conn):
 
 
 def handle_merge_airport(conn, old_ap, new_ap, replace_pair=None, keep_node_name=False, auto_yes=False):
-    """合并历史库中的机场名，并可选同步修正 node_name 中的旧前缀文本。"""
+    """合并历史库中的旧机场名，并可选同步替换 node_name 中的旧前缀片段。"""
     old_ap = old_ap.strip()
     new_ap = new_ap.strip()
     rows = conn.execute(
@@ -731,32 +876,117 @@ def handle_merge_airport(conn, old_ap, new_ap, replace_pair=None, keep_node_name
     print(f"合并完成，已更新 {len(rows)} 条历史样本。")
 
 
-def export_recommendation_yaml(static_ip, now_iso, picked, effective_cap):
-    lines = [
-        f"# 生成时间: {now_iso}",
-        f"# 目标静态 IP: {static_ip}",
-        f"# 单机场上限: {effective_cap}（精选池总数: {len(picked)}）",
-        "# 说明: 请人工核对后手动复制到本地 Merge.yaml 的 static-proxy 下，不会自动改动原存档。",
-        "  nodes:",
+def format_node_comment(item):
+    avg_str = f"{item['weighted_avg']:.0f}ms" if item["weighted_avg"] is not None else "N/A"
+    tags = []
+    if item.get("pick_status") == "fallback":
+        tags.append("兜底")
+    if item.get("is_new"):
+        tags.append("新")
+    tag_str = f"[{'/'.join(tags)}] " if tags else ""
+    return (
+        f"{tag_str}{item['airport']} | 历史分 {item['history_score']:.1f} "
+        f"| 均延 {avg_str} | 可用 {item['avail']*100:.0f}% ({item['runs']}次)"
+    )
+
+
+def export_recommendations(export_entries, now_iso):
+    """同步导出 Merge.yaml 片段（YAML）与 FlClash 片段（JS，含全量与按机场拆分数组）。"""
+    valid_entries = [e for e in export_entries if e["picked"]]
+    if not valid_entries:
+        return
+
+    # 1. 导出 Merge.yaml 片段
+    yaml_lines = [
+        f"# 导出时间: {now_iso}",
+        f"# 说明: 按静态 IP 分段导出全部达标节点及单机场兜底节点（客户端每组自动截取命中的前 {DISPLAY_TOP_LIMIT} 个显示）。",
+        "# 用法: 将对应静态 IP 下的 nodes: 块复制到 Merge.yaml 对应条目中即可。",
+        "",
     ]
-    for item in picked:
-        avg_str = f"{item['weighted_avg']:.0f}ms" if item["weighted_avg"] is not None else "N/A"
-        tag = "[新] " if item["is_new"] else ""
-        lines.append(
-            f"    - {json.dumps(item['node_name'], ensure_ascii=False)}"
-            f"  # {tag}{item['airport']} | 历史分 {item['history_score']:.1f} | 均延 {avg_str} | 可用 {item['avail']*100:.0f}% ({item['runs']}次)"
+    for entry in valid_entries:
+        meta = entry["meta"]
+        picked = entry["picked"]
+        thr_str = f"<= {meta['threshold']:.1f}ms (可用率 >= {MIN_HISTORY_AVAIL*100:.0f}%)" if meta["threshold"] is not None else "无达标（仅兜底）"
+        yaml_lines.append("# " + "=" * 68)
+        yaml_lines.append(f"# 静态 IP: {entry['name']} ({entry['static_ip']}) | 最近测速: {entry['last_iso']}")
+        yaml_lines.append(
+            f"# 达标界限: {thr_str} | 共 {len(picked)} 个（达标 {meta['qualified_count']} + 机场兜底 {meta['fallback_count']}）"
         )
+        yaml_lines.append("# " + "=" * 68)
+        yaml_lines.append("    nodes:")
+        for idx, item in enumerate(picked):
+            if idx == DISPLAY_TOP_LIMIT:
+                yaml_lines.append(f"      # --- 以下为第 {DISPLAY_TOP_LIMIT + 1}+ 位备选（切回单机场订阅时自动前移补位） ---")
+            yaml_lines.append(
+                f"      - {json.dumps(item['node_name'], ensure_ascii=False)}"
+                f"  # {format_node_comment(item)}"
+            )
+        yaml_lines.append("")
+
     with open(EXPORT_YAML_PATH, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
+        f.write("\n".join(yaml_lines))
+
+    # 2. 导出 FlClash JS 片段（提供完整列表与按机场拆分列表，消除 YAML/JS 手工转换）
+    js_lines = [
+        f"// 导出时间: {now_iso}",
+        "// 说明: 供 FlClash 直接粘贴至 Scripts.js 顶部 STATIC_CONFIG.staticProxies 对应条目的 nodes 字段。",
+        f"// 客户端会自动过滤当前订阅存活节点并最多显示前 {DISPLAY_TOP_LIMIT} 个。",
+        "",
+    ]
+    for entry in valid_entries:
+        meta = entry["meta"]
+        picked = entry["picked"]
+        thr_str = f"<= {meta['threshold']:.1f}ms" if meta["threshold"] is not None else "仅兜底"
+        js_lines.append("// " + "=" * 68)
+        js_lines.append(f"// 静态 IP: {entry['name']} ({entry['static_ip']}) | 最近测速: {entry['last_iso']}")
+        js_lines.append(
+            f"// 达标界限: {thr_str} | 共 {len(picked)} 个（达标 {meta['qualified_count']} + 机场兜底 {meta['fallback_count']}）"
+        )
+        js_lines.append("// " + "=" * 68)
+        js_lines.append("// 【完整列表（适合聚合订阅或配合 currentAirport 使用）】")
+        js_lines.append("nodes: [")
+        for idx, item in enumerate(picked):
+            if idx == DISPLAY_TOP_LIMIT:
+                js_lines.append(f"  // --- 以下为第 {DISPLAY_TOP_LIMIT + 1}+ 位备选（单机场自动补位） ---")
+            comma = "," if idx < len(picked) - 1 else ""
+            js_lines.append(
+                f"  {json.dumps(item['node_name'], ensure_ascii=False)}{comma}"
+                f"  // {format_node_comment(item)}"
+            )
+        js_lines.append("],")
+
+        by_airport = {}
+        for item in picked:
+            by_airport.setdefault(item["airport"], []).append(item)
+
+        if len(by_airport) > 1 or (len(by_airport) == 1 and DEFAULT_AIRPORT not in by_airport):
+            js_lines.append("")
+            js_lines.append("// 【按机场拆分（适合 FlClash 单机场订阅按需复制）】")
+            for ap, ap_items in by_airport.items():
+                js_lines.append(f"// 机场: {ap}（共 {len(ap_items)} 个，已按优劣排序）")
+                js_lines.append("nodes: [")
+                for idx, item in enumerate(ap_items):
+                    comma = "," if idx < len(ap_items) - 1 else ""
+                    js_lines.append(
+                        f"  {json.dumps(item['node_name'], ensure_ascii=False)}{comma}"
+                        f"  // {format_node_comment(item)}"
+                    )
+                js_lines.append("],")
+        js_lines.append("")
+
+    with open(EXPORT_JS_PATH, "w", encoding="utf-8") as f:
+        f.write("\n".join(js_lines))
 
 
-def print_reports(static_ip, now_iso, current_records, ip_ranking, global_ranking, airport_summary, picked, effective_cap):
+def print_single_ip_report(target_name, static_ip, current_records, ip_ranking, picked, meta):
+    label = f"{target_name} ({static_ip})" if target_name != static_ip else static_ip
+
     if current_records:
         ok_records = [r for r in current_records if r["ok_count"] > 0]
         ok_records.sort(key=lambda x: x["eff_score"])
-        print("\n" + "=" * 72)
-        print(f"一、本次测速最优 Top 10（静态 IP: {static_ip}）")
-        print("=" * 72)
+        print("\n" + "=" * 74)
+        print(f"一、本次测速最优 Top 10（{label}）")
+        print("=" * 74)
         for idx, r in enumerate(ok_records[:10], 1):
             phase_tag = f"{r['ok_count']}/{r['total_count']}"
             jitter_str = f"{r['jitter_ms']:.0f}ms" if r["jitter_ms"] is not None else "-"
@@ -765,17 +995,32 @@ def print_reports(static_ip, now_iso, current_records, ip_ranking, global_rankin
                 f"| [{r['airport']}] {r['node_name']}"
             )
 
-    print("\n" + "=" * 72)
-    print(f"二、当前静态 IP 历史最优 Top 15（静态 IP: {static_ip}，仅含当前存活节点）")
-    print("=" * 72)
+    thr_desc = (
+        f"历史分 <= {meta['threshold']:.1f}ms 且可用率 >= {MIN_HISTORY_AVAIL*100:.0f}%"
+        if meta["threshold"] is not None
+        else "无达标节点（启用机场兜底）"
+    )
+    print("\n" + "=" * 74)
+    print(f"二、当前静态 IP 历史最优 Top 15（{label}）")
+    print(f"    达标界限：{thr_desc}")
+    print("=" * 74)
+
+    picked_status = {item["node_key"]: item["pick_status"] for item in picked}
     if not ip_ranking:
         print("暂无该静态 IP 的历史记录。")
     else:
         for idx, item in enumerate(ip_ranking[:15], 1):
             avg_str = f"{item['weighted_avg']:>5.1f}ms" if item["weighted_avg"] is not None else "  N/A "
-            new_tag = "[新]" if item["is_new"] else "    "
+            st = picked_status.get(item["node_key"])
+            if st == "qualified":
+                badge = "[达标]"
+            elif st == "fallback":
+                badge = "[兜底]"
+            else:
+                badge = "      "
+            new_tag = "*" if item["is_new"] else " "
             print(
-                f"{idx:>2}. {new_tag} 历史分 {item['history_score']:>5.1f} | 衰减均延 {avg_str} "
+                f"{idx:>2}. {badge}{new_tag} 历史分 {item['history_score']:>5.1f} | 衰减均延 {avg_str} "
                 f"| 可用 {item['avail']*100:>3.0f}% | {item['runs']:>2}次 | [{item['airport']}] {item['node_name']}"
             )
 
@@ -793,9 +1038,26 @@ def print_reports(static_ip, now_iso, current_records, ip_ranking, global_rankin
                     f"| {item['runs']}次 | [{item['airport']}] {item['node_name']}"
                 )
 
-    print("\n" + "=" * 72)
+    print("\n" + "-" * 74)
+    if not picked:
+        print(f"推荐输出（{label}）：无可用节点（全部历史超时）。")
+    else:
+        print(
+            f"推荐输出（{label}）：共导出 {len(picked)} 个节点"
+            f"（达标 {meta['qualified_count']} + 机场兜底 {meta['fallback_count']}，"
+            f"客户端面板自动显示命中前 {DISPLAY_TOP_LIMIT} 个）"
+        )
+        for idx, item in enumerate(picked[:DISPLAY_TOP_LIMIT], 1):
+            tag = "[兜底] " if item["pick_status"] == "fallback" else ""
+            print(f"  {idx:>2}. {tag}[{item['airport']}] {item['node_name']} ({item['history_score']:.1f})")
+        if len(picked) > DISPLAY_TOP_LIMIT:
+            print(f"  ... 其余 {len(picked) - DISPLAY_TOP_LIMIT} 个备选节点已完整写入导出文件。")
+
+
+def print_global_report(global_ranking, airport_summary):
+    print("\n" + "=" * 74)
     print("三、跨静态 IP 整体最优 Top 10（相对表现分，满分 100，用于评估通用底座质量）")
-    print("=" * 72)
+    print("=" * 74)
     if not global_ranking:
         print("暂无跨 IP 历史记录。")
     else:
@@ -813,22 +1075,89 @@ def print_reports(static_ip, now_iso, current_records, ip_ranking, global_rankin
                 f"| 整体可用 {ap['avg_avail']*100:>3.0f}% | 存活节点 {ap['node_count']:>3}"
             )
 
-    print("\n" + "=" * 72)
-    print(f"四、推荐精选池（单机场上限 {effective_cap}，已同步写入 {os.path.basename(EXPORT_YAML_PATH)}）")
-    print("=" * 72)
-    if not picked:
-        print("暂无可推荐节点。")
-    else:
-        print("  nodes:")
-        for item in picked:
-            print(f"    - {json.dumps(item['node_name'], ensure_ascii=False)}")
+
+def run_benchmark_for_probe(conn, probe, candidates, airport_map, now_dt, now_ts, now_iso):
+    """对单个静态 IP 执行两阶段串行测速（全量初筛 + Top N 交叉复测）并落库。"""
+    static_ip = probe["static_ip"]
+    probe_proxy_name = probe["proxy_name"]
+    detected_airports = sorted({airport_map[n] for n in candidates})
+    peak = is_peak_hour(now_dt)
+
+    print("\n" + "#" * 74)
+    print(f"开始测速：{probe['name']} ({static_ip}) | 时段：{'晚高峰 (1.4x)' if peak else '常规 (1.0x)'}")
+    print(f"识别到机场 ({len(detected_airports)})：{', '.join(detected_airports)}")
+    print(f"候选节点：{len(candidates)} 个，预计第一阶段耗时约 {int(len(candidates) * (SLEEP_BETWEEN_NODES + 0.5))} 秒")
+    print("#" * 74)
+    print("\n=== 第一阶段：并发=1 全量初筛 ===")
+
+    phase1_results = {}
+    for idx, node in enumerate(candidates, 1):
+        delay = test_one_node(probe_proxy_name, node)
+        phase1_results[node] = delay
+        status_str = f"{delay:.0f} ms" if delay is not None else "超时/失败"
+        print(f"[{idx:>3}/{len(candidates)}] {status_str:<10} | [{airport_map[node]}] {node}")
+        time.sleep(SLEEP_BETWEEN_NODES)
+
+    phase1_ok = [(n, d) for n, d in phase1_results.items() if d is not None]
+    phase1_ok.sort(key=lambda x: x[1])
+    shortlist = [n for n, _ in phase1_ok[:TOP_N_VERIFY]]
+
+    # 交叉轮测而非单节点连测，降低瞬时波动对单个节点的偏向
+    phase2_samples = {n: [] for n in shortlist}
+    if shortlist and VERIFY_ROUNDS > 0:
+        print(f"\n=== 第二阶段：Top {len(shortlist)} 节点 {VERIFY_ROUNDS} 轮交叉复测 ===")
+        for r in range(1, VERIFY_ROUNDS + 1):
+            print(f"--- 第 {r}/{VERIFY_ROUNDS} 轮 ---")
+            for node in shortlist:
+                delay = test_one_node(probe_proxy_name, node)
+                phase2_samples[node].append(delay)
+                print(f"  {f'{delay:.0f} ms' if delay is not None else '失败':<8} | [{airport_map[node]}] {node}")
+                time.sleep(SLEEP_BETWEEN_NODES)
+
+    records = []
+    for node in candidates:
+        if node in phase2_samples and VERIFY_ROUNDS > 0:
+            raw_list = phase2_samples[node]
+            ok_delays = [d for d in raw_list if d is not None]
+            total_c = len(raw_list)
+            phase = 2
+        else:
+            d = phase1_results[node]
+            ok_delays = [d] if d is not None else []
+            total_c = 1
+            phase = 1
+
+        avg_ms, min_ms, max_ms, jitter_ms, eff_score = calc_single_run_eff_score(ok_delays, total_c, phase)
+        ap = airport_map[node]
+        records.append({
+            "airport": ap,
+            "node_name": node,
+            "node_key": make_node_key(node, ap, ap),
+            "ok_count": len(ok_delays),
+            "total_count": total_c,
+            "avg_ms": avg_ms,
+            "min_ms": min_ms,
+            "max_ms": max_ms,
+            "jitter_ms": jitter_ms,
+            "eff_score": eff_score,
+            "phase": phase,
+            "rel_score": 0.0,
+        })
+
+    batch_median = compute_relative_scores(records)
+    run_id = save_run_to_db(conn, now_ts, now_iso, static_ip, peak, records, batch_median)
+    print(f"\n已写入历史数据库（批次 #{run_id}，路径：{DB_PATH}）")
+    return records
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Clash 静态链式代理低并发测速与历史评分工具")
+    parser = argparse.ArgumentParser(description="Clash 多静态 IP 链式代理低并发测速与历史评分工具")
+    parser.add_argument("--target", default=None, help="指定目标静态 IP（填 Merge.yaml 中的 name 或 IP:端口）")
+    parser.add_argument("--ip", default=None, help="--target 的别名（兼容旧用法）")
+    parser.add_argument("--all", action="store_true", help="对当前全部静态 IP 探针串行轮测（或在 --report-only 下查看全部）")
     parser.add_argument("--airport", default=None, help="强制指定本次订阅归属的机场名（适合单机场订阅）")
-    parser.add_argument("--report-only", action="store_true", help="仅查看历史榜单，不执行新测速")
-    parser.add_argument("--ip", default=None, help="配合 --report-only 离线指定要查询的静态 IP（如 1.2.3.4:1080）")
+    parser.add_argument("--report-only", action="store_true", help="仅查看历史榜单并重新导出推荐文件，不执行新测速")
+    parser.add_argument("--list-targets", action="store_true", help="列出当前生效探针与历史库内全部静态 IP")
     parser.add_argument("--list-airports", action="store_true", help="列出历史数据库中所有机场名与示例节点")
     parser.add_argument(
         "--merge-airport",
@@ -840,7 +1169,7 @@ def main():
         "--replace-text",
         nargs=2,
         metavar=("OLD_TEXT", "NEW_TEXT"),
-        help="配合 --merge-airport 使用，自定义节点名中的替换片段（如处理 悦通悦 -> [悦通] 悦）",
+        help="配合 --merge-airport 使用，自定义节点名中的替换片段",
     )
     parser.add_argument(
         "--keep-node-name",
@@ -850,6 +1179,8 @@ def main():
     parser.add_argument("--yes", action="store_true", help="配合 --merge-airport 跳过交互确认")
     args = parser.parse_args()
 
+    target_arg = args.target or args.ip
+
     conn = sqlite3.connect(DB_PATH)
     init_db(conn)
 
@@ -858,6 +1189,10 @@ def main():
     now_iso = now_dt.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
+        if args.list_targets:
+            handle_list_targets(conn)
+            return
+
         if args.list_airports:
             handle_list_airports(conn)
             return
@@ -873,36 +1208,67 @@ def main():
             )
             return
 
+        # 仅出榜与刷新导出模式（支持连接 Clash Verge 过滤当前存活节点，也支持离线读库）
         if args.report_only:
-            static_ip = args.ip
             live_key_to_node = None
-            if not static_ip:
-                try:
-                    static_ip, _, all_nodes = discover_probe_and_nodes()
-                    airport_map = build_airport_map(all_nodes, args.airport)
-                    live_key_to_node = {
-                        make_node_key(n, airport_map[n], airport_map[n]): n
-                        for n in all_nodes
-                    }
-                except Exception:
+            report_targets = []
+            try:
+                probes, all_nodes = discover_probes_and_nodes()
+                airport_map = build_airport_map(all_nodes, args.airport)
+                live_key_to_node = {
+                    make_node_key(n, airport_map[n], airport_map[n]): n
+                    for n in all_nodes
+                }
+                if target_arg:
+                    try:
+                        p = match_probe_target(probes, target_arg)
+                        report_targets = [{"name": p["name"], "static_ip": p["static_ip"]}]
+                    except RuntimeError:
+                        # 允许查询数据库中存在但当前未启用的历史静态 IP
+                        report_targets = [{"name": target_arg, "static_ip": target_arg}]
+                else:
+                    report_targets = [{"name": p["name"], "static_ip": p["static_ip"]} for p in probes]
+            except Exception:
+                if target_arg:
+                    report_targets = [{"name": target_arg, "static_ip": target_arg}]
+                elif args.all:
+                    rows = conn.execute(
+                        "SELECT static_ip FROM runs GROUP BY static_ip ORDER BY MAX(tested_at) DESC"
+                    ).fetchall()
+                    report_targets = [{"name": r[0], "static_ip": r[0]} for r in rows]
+                else:
                     row = conn.execute("SELECT static_ip FROM runs ORDER BY tested_at DESC LIMIT 1").fetchone()
-                    if not row:
-                        print("数据库尚无历史记录，且无法连接 Clash Verge 外部控制。")
-                        sys.exit(1)
-                    static_ip = row[0]
-                    print(f"提示：未连接 Clash Verge，离线展示最近一次测速的静态 IP（{static_ip}）历史榜单。")
+                    if row:
+                        report_targets = [{"name": row[0], "static_ip": row[0]}]
+                if not report_targets:
+                    print("数据库尚无历史记录，且无法连接 Clash Verge 外部控制。")
+                    sys.exit(1)
+                print("提示：未连接 Clash Verge，以下为离线历史榜单。")
 
-            ip_ranking = query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts)
+            export_entries = []
+            for t in report_targets:
+                ip_ranking = query_ip_history_ranking(conn, t["static_ip"], live_key_to_node, now_ts)
+                picked, meta = select_recommended_nodes(ip_ranking)
+                last_iso = get_last_tested_iso(conn, t["static_ip"]) or "无记录"
+                print_single_ip_report(t["name"], t["static_ip"], [], ip_ranking, picked, meta)
+                export_entries.append({
+                    "name": t["name"],
+                    "static_ip": t["static_ip"],
+                    "last_iso": last_iso,
+                    "picked": picked,
+                    "meta": meta,
+                })
+
             global_ranking, airport_summary = query_global_history_ranking(conn, live_key_to_node, now_ts)
-            picked, effective_cap = pick_diverse_nodes(ip_ranking)
-            if picked:
-                export_recommendation_yaml(static_ip, now_iso, picked, effective_cap)
-            print_reports(static_ip, now_iso, [], ip_ranking, global_ranking, airport_summary, picked, effective_cap)
+            print_global_report(global_ranking, airport_summary)
+            export_recommendations(export_entries, now_iso)
+            if any(e["picked"] for e in export_entries):
+                print(f"\n已更新导出文件：\n  - YAML (Merge): {EXPORT_YAML_PATH}\n  - JS (FlClash): {EXPORT_JS_PATH}")
             return
 
         # 正常测速流程
         try:
-            static_ip, probe_proxy_name, all_nodes = discover_probe_and_nodes()
+            all_probes, all_nodes = discover_probes_and_nodes()
         except urllib.error.HTTPError as e:
             if e.code in (401, 403):
                 print("鉴权失败：请检查脚本中的 SECRET 是否与 Clash Verge 外部控制一致。")
@@ -911,6 +1277,12 @@ def main():
             sys.exit(1)
         except Exception as e:
             print(f"初始化失败：{e}")
+            sys.exit(1)
+
+        try:
+            selected_probes = choose_probes_for_benchmark(all_probes, target_arg, args.all)
+        except Exception as e:
+            print(f"目标选择失败：{e}")
             sys.exit(1)
 
         candidates = [
@@ -927,79 +1299,54 @@ def main():
             make_node_key(n, airport_map[n], airport_map[n]): n
             for n in all_nodes
         }
-        detected_airports = sorted({airport_map[n] for n in candidates})
-        peak = is_peak_hour(now_dt)
 
-        print(f"当前静态 IP：{static_ip} | 时段：{'晚高峰 (1.4x)' if peak else '常规 (1.0x)'}")
-        print(f"识别到机场 ({len(detected_airports)})：{', '.join(detected_airports)}")
-        print(f"候选节点：{len(candidates)} 个，预计第一阶段耗时约 {int(len(candidates) * (SLEEP_BETWEEN_NODES + 0.5))} 秒\n")
-        print("=== 第一阶段：并发=1 全量初筛 ===")
+        # 串行轮测所选静态 IP（因共用同一个 🧪 测速前置 组，不可多进程并发执行）
+        tested_records_by_ip = {}
+        for probe in selected_probes:
+            run_dt = datetime.datetime.now()
+            run_ts = int(run_dt.timestamp())
+            run_iso = run_dt.strftime("%Y-%m-%d %H:%M:%S")
+            records = run_benchmark_for_probe(conn, probe, candidates, airport_map, run_dt, run_ts, run_iso)
+            tested_records_by_ip[probe["static_ip"]] = records
 
-        phase1_results = {}
-        for idx, node in enumerate(candidates, 1):
-            delay = test_one_node(probe_proxy_name, node)
-            phase1_results[node] = delay
-            status_str = f"{delay:.0f} ms" if delay is not None else "超时/失败"
-            print(f"[{idx:>3}/{len(candidates)}] {status_str:<10} | [{airport_map[node]}] {node}")
-            time.sleep(SLEEP_BETWEEN_NODES)
+        report_ts = int(datetime.datetime.now().timestamp())
+        report_iso = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        phase1_ok = [(n, d) for n, d in phase1_results.items() if d is not None]
-        phase1_ok.sort(key=lambda x: x[1])
-        shortlist = [n for n, _ in phase1_ok[:TOP_N_VERIFY]]
+        selected_ip_set = {p["static_ip"] for p in selected_probes}
+        for probe in selected_probes:
+            ip_ranking = query_ip_history_ranking(conn, probe["static_ip"], live_key_to_node, report_ts)
+            picked, meta = select_recommended_nodes(ip_ranking)
+            print_single_ip_report(
+                probe["name"],
+                probe["static_ip"],
+                tested_records_by_ip.get(probe["static_ip"], []),
+                ip_ranking,
+                picked,
+                meta,
+            )
 
-        phase2_samples = {n: [] for n in shortlist}
-        if shortlist and VERIFY_ROUNDS > 0:
-            print(f"\n=== 第二阶段：Top {len(shortlist)} 节点 {VERIFY_ROUNDS} 轮交叉复测 ===")
-            for r in range(1, VERIFY_ROUNDS + 1):
-                print(f"--- 第 {r}/{VERIFY_ROUNDS} 轮 ---")
-                for node in shortlist:
-                    delay = test_one_node(probe_proxy_name, node)
-                    phase2_samples[node].append(delay)
-                    print(f"  {f'{delay:.0f} ms' if delay is not None else '失败':<8} | [{airport_map[node]}] {node}")
-                    time.sleep(SLEEP_BETWEEN_NODES)
+        global_ranking, airport_summary = query_global_history_ranking(conn, live_key_to_node, report_ts)
+        print_global_report(global_ranking, airport_summary)
 
-        records = []
-        for node in candidates:
-            if node in phase2_samples and VERIFY_ROUNDS > 0:
-                raw_list = phase2_samples[node]
-                ok_delays = [d for d in raw_list if d is not None]
-                total_c = len(raw_list)
-                phase = 2
-            else:
-                d = phase1_results[node]
-                ok_delays = [d] if d is not None else []
-                total_c = 1
-                phase = 1
-
-            avg_ms, min_ms, max_ms, jitter_ms, eff_score = calc_single_run_eff_score(ok_delays, total_c, phase)
-            ap = airport_map[node]
-            records.append({
-                "airport": ap,
-                "node_name": node,
-                "node_key": make_node_key(node, ap, ap),
-                "ok_count": len(ok_delays),
-                "total_count": total_c,
-                "avg_ms": avg_ms,
-                "min_ms": min_ms,
-                "max_ms": max_ms,
-                "jitter_ms": jitter_ms,
-                "eff_score": eff_score,
-                "phase": phase,
-                "rel_score": 0.0,
+        # 汇集当前全部生效静态 IP 的历史推荐统一导出，避免单测某一个 IP 时覆盖其它 IP 的导出段落
+        export_entries = []
+        for probe in all_probes:
+            ip_ranking = query_ip_history_ranking(conn, probe["static_ip"], live_key_to_node, report_ts)
+            if not ip_ranking and probe["static_ip"] not in selected_ip_set:
+                continue
+            picked, meta = select_recommended_nodes(ip_ranking)
+            last_iso = get_last_tested_iso(conn, probe["static_ip"]) or report_iso
+            export_entries.append({
+                "name": probe["name"],
+                "static_ip": probe["static_ip"],
+                "last_iso": last_iso,
+                "picked": picked,
+                "meta": meta,
             })
 
-        batch_median = compute_relative_scores(records)
-        run_id = save_run_to_db(conn, now_ts, now_iso, static_ip, peak, records, batch_median)
-        print(f"\n已写入历史数据库（批次 #{run_id}，路径：{DB_PATH}）")
-
-        ip_ranking = query_ip_history_ranking(conn, static_ip, live_key_to_node, now_ts)
-        global_ranking, airport_summary = query_global_history_ranking(conn, live_key_to_node, now_ts)
-        picked, effective_cap = pick_diverse_nodes(ip_ranking)
-
-        if picked:
-            export_recommendation_yaml(static_ip, now_iso, picked, effective_cap)
-
-        print_reports(static_ip, now_iso, records, ip_ranking, global_ranking, airport_summary, picked, effective_cap)
+        export_recommendations(export_entries, report_iso)
+        if any(e["picked"] for e in export_entries):
+            print(f"\n已更新导出文件：\n  - YAML (Merge): {EXPORT_YAML_PATH}\n  - JS (FlClash): {EXPORT_JS_PATH}")
     finally:
         conn.close()
 
