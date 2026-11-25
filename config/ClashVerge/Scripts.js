@@ -1,11 +1,12 @@
 // =========================================================================
-// Mihomo / Clash Verge / FlClash 全局预处理脚本 v3.3
+// Mihomo / Clash Verge 全局预处理脚本 v3.3
 // 最新更新：2026-11-26
 // =========================================================================
 // 功能概览：
 // 1. 多静态 IP 独立手动链路：每个静态 IP 生成独立的「🏠 静态 · <name>」select 组与专属隐藏探针，
 //    不启后台 url-test 探活，避免并发测速触发静态 IP 风控，且多 IP 选同地区不同前置节点互不冲突
-// 2. 精选截断与地区兜底：从完整 nodes 达标池中取当前存活的前 N 个（默认 15），底部附带 region 地区组兜底
+// 2. 双模式静态节点录入：支持 endpoint 单行连接串（ip:端口:用户:密码 / URI）与标准分字段写法，
+//    从完整 nodes 达标池中截取当前存活的前 N 个（默认 15），底部附带 region 地区组兜底
 // 3. 规则与 DNS 联动：由 rulesets 统一驱动分流与加密 DNS 出口，通用化公告词过滤
 // =========================================================================
 
@@ -17,14 +18,12 @@ const STATIC_CONFIG = {
   maxStaticNodes: 15,        // 单个静态 IP 面板最多显示的精选前置节点数
   currentAirport: "",        // 单机场订阅去前缀匹配辅助名（FlClash 不传订阅名时可在此指定当前机场名）
   staticProxies: [
-    // server 留空则跳过；nodes 可直接从 latest_recommendation_flclash.js 复制粘贴
+    // endpoint 与 server 均留空则跳过；nodes 可直接从 latest_recommendation_flclash.js 复制粘贴
+    // 除 endpoint 简写外，也支持直接填写 server, port, username, password 等标准 Mihomo 协议字段
     {
       name: "美国",          // 面板显示名与测速目标名（勿留空或重名；改名会导致已记忆的策略组选中状态重置）
-      type: "socks5",        // 支持 socks5 / http / vless / trojan / ss / hysteria2 等任意 Mihomo 协议
-      server: "",            // 静态 IP 地址或域名（留空或填占位符则跳过该条目）
-      port: 7213,            // 端口号 (1 - 65535)
-      username: "",          // 鉴权用户名（无鉴权可留空或删除；多条共用同 IP:端口 网关时脚本会自动按此隔离历史库）
-      password: "",          // 鉴权密码（无鉴权可留空或删除）
+      type: "socks5",        // 支持 socks5, http, vless, trojan, ss, hysteria2 等任意 Mihomo 协议
+      endpoint: "",          // 单行连接串：支持 ip:port、ip:port:user:pass、[IPv6]:port:user:pass 或 socks5/http:// URI
       udp: true,             // 是否启用 UDP 转发
       region: "US",          // 底部兜底地区组（仅挂载对应地区组，不挂 Auto；如 "US" 或 "JP,SG"）
       nodes: [],             // 达标前置节点池：直接粘贴 latest_recommendation.yaml 中对应段落的 nodes
@@ -32,10 +31,7 @@ const STATIC_CONFIG = {
     {
       name: "日本",
       type: "socks5",
-      server: "",
-      port: 7213,
-      username: "",
-      password: "",
+      endpoint: "",
       udp: true,
       region: "JP",
       nodes: [],
@@ -219,6 +215,86 @@ function main(config, profileName = "") {
       : (STATIC_CONFIG.currentAirport || profileName || "")
   ).trim();
 
+  const safeDecode = (str) => {
+    try {
+      return decodeURIComponent(str);
+    } catch {
+      return str;
+    }
+  };
+
+  // 解析 endpoint 单行连接串：支持 ip:port、ip:port:user:pass、[IPv6]:port:user:pass 及 socks5/http(s):// URI
+  const parseEndpoint = (raw) => {
+    const str = String(raw ?? "").trim();
+    if (!str) return null;
+
+    const uriMatch = str.match(
+      /^(socks5|http|https):\/\/(?:([^:@\s]+)(?::([^@\s]*))?@)?(\[[^\]]+\]|[^:\s/]+):(\d{1,5})\/?$/i
+    );
+    if (uriMatch) {
+      const scheme = uriMatch[1].toLowerCase();
+      return {
+        type: scheme === "https" ? "http" : scheme,
+        ...(scheme === "https" ? { tls: true } : {}),
+        server: uriMatch[4].replace(/^\[|\]$/g, ""),
+        port: Number(uriMatch[5]),
+        ...(uriMatch[2] !== undefined ? { username: safeDecode(uriMatch[2]) } : {}),
+        ...(uriMatch[3] !== undefined ? { password: safeDecode(uriMatch[3]) } : {})
+      };
+    }
+
+    let server = "";
+    let rest = "";
+    if (str.startsWith("[")) {
+      const endBracket = str.indexOf("]");
+      if (endBracket === -1 || str[endBracket + 1] !== ":") return null;
+      server = str.slice(1, endBracket).trim();
+      rest = str.slice(endBracket + 2);
+    } else {
+      const firstColon = str.indexOf(":");
+      if (firstColon === -1) return null;
+      server = str.slice(0, firstColon).trim();
+      rest = str.slice(firstColon + 1);
+    }
+
+    const parts = rest.split(":");
+    const portStr = (parts[0] || "").trim();
+    if (!/^\d{1,5}$/.test(portStr)) return null;
+
+    const parsed = { server, port: Number(portStr) };
+    if (parts.length >= 2 && parts[1] !== "") {
+      parsed.username = parts[1];
+    }
+    if (parts.length >= 3) {
+      parsed.password = parts.slice(2).join(":"); // 密码本身含冒号时保持完整不截断
+    }
+    return parsed;
+  };
+
+  // 统一剥离临时字段 endpoint；非空时强制隔离同条目下残留的 server/port/username/password，防止新旧字段串值
+  const normalizeStaticNode = (node) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return node;
+    const { endpoint, ...rest } = node;
+    if (endpoint === undefined || endpoint === null || String(endpoint).trim() === "") {
+      return rest;
+    }
+
+    const { server: _s, port: _p, username: _u, password: _pw, ...others } = rest;
+    const parsed = parseEndpoint(endpoint);
+    if (!parsed) return others; // endpoint 格式非法时跳过该条目，不静默回退到旧连接参数
+
+    const resolvedType = parsed.type || String(others.type ?? "").trim() || "socks5";
+    return {
+      ...others,
+      type: resolvedType,
+      ...(parsed.tls !== undefined ? { tls: parsed.tls } : {}),
+      server: parsed.server,
+      port: parsed.port,
+      ...(parsed.username !== undefined ? { username: parsed.username } : {}),
+      ...(parsed.password !== undefined ? { password: parsed.password } : {})
+    };
+  };
+
   const isValidStaticNode = (node) => {
     if (!node || typeof node !== "object" || Array.isArray(node)) return false;
     const type = String(node.type ?? "").trim();
@@ -252,7 +328,7 @@ function main(config, profileName = "") {
     return `${host}:${port}`;
   };
 
-  const validStaticRaw = rawStaticList.filter(isValidStaticNode);
+  const validStaticRaw = rawStaticList.map(normalizeStaticNode).filter(isValidStaticNode);
 
   // 统计各 host:port 出现次数：独立 IP 直接沿用 host:port 作为数据库键（兼容旧库且改名不丢历史）
   const hostPortCounts = new Map();
@@ -507,6 +583,7 @@ function main(config, profileName = "") {
       // 完整继承协议连接参数，剔除辅助元数据与可能误填的 name / dialer-proxy
       const {
         name: _ignoreName,
+        endpoint: _ignoreEndpoint,
         "dialer-proxy": _ignoreDialer,
         region: _ignoreRegion,
         regions: _ignoreRegions,
