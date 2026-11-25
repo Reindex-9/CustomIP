@@ -22,24 +22,19 @@
 # 覆盖单个静态 IP 面板最大显示节点数（默认 15，不建议过大，防误触全组测速时高并发撞击静态 IP）
 # max-static-nodes: 15
 
-static-proxies:
-  - name: "美国"                # 面板显示名与测速目标名（勿留空或重名；改名会导致已记忆的策略组选中状态重置）
-    type: socks5                # 支持 socks5 / http / vless / trojan / ss / hysteria2 等任意 Mihomo 协议
-    server: ""                  # 静态 IP 地址或域名（留空或填占位符则跳过该条目）
-    port: 7213                  # 端口号 (1 - 65535)
-    username: ""                # 鉴权用户名（无鉴权可留空或删除；多条共用同 IP:端口 网关时脚本会自动按此隔离历史库）
-    password: ""                # 鉴权密码（无鉴权可留空或删除）
-    udp: true                   # 是否启用 UDP 转发
-    region: "US"                # 底部兜底地区组（仅挂载对应地区组，不挂 Auto；如 "US" 或 "JP,SG"）
-    nodes: []                   # 达标前置节点池：直接粘贴 latest_recommendation.yaml 中对应段落的 nodes
+# 静态IP配置，具体含义参照 Scripts.js
+static-proxies:       
+  - name: "美国"                
+    type: socks5                
+    endpoint: ""               
+    udp: true                   
+    region: "US"                
+    nodes: []                   
 
   # 第二个静态 IP
   - name: "日本"
     type: socks5
-    server: ""
-    port: 
-    username: ""
-    password: ""
+    endpoint: ""
     udp: true
     region: "JP"
     nodes: []
