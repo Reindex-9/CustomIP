@@ -16,7 +16,7 @@
 // ╚═══════════════════════════════════════════════════════════════════════╝
 const STATIC_CONFIG = {
   maxStaticNodes: 15,        // 单个静态 IP 面板最多显示的精选前置节点数
-  currentAirport: "",        // 单机场订阅去前缀匹配辅助名（FlClash 不传订阅名时可在此指定当前机场名）
+  currentAirport: "",        // 单机场订阅去前缀匹配辅助名（FlClash 不传订阅名时可在此指定当前机场名，多机场名用逗号隔开）
   staticProxies: [
     // endpoint 与 server 均留空则跳过；nodes 可直接从 latest_recommendation_flclash.js 复制粘贴
     // 除 endpoint 简写外，也支持直接填写 server, port, username, password 等标准 Mihomo 协议字段
