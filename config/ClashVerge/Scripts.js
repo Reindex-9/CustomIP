@@ -82,7 +82,7 @@ const USER_CONFIG = {
     { id: "AI",               group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/Reindex-9/CustomIP/refs/heads/main/Rules/RuleSets/AI.list" },
     { id: "YouTube",          group: "▶️ YouTube",  url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.list" },
     { id: "GoogleCNProxyIP",  group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GoogleCNProxyIP.list" },
-    { id: "Google",           group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Google/Google.list" },
+    { id: "Google",           group: "🚩 CustomIP", url: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Google.list" },
     { id: "Microsoft",        group: "🔘 Option",   url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.list" },
     { id: "Apple",            group: "🔘 Option",   url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.list" },
     { id: "XiaoHongShu",      group: "🌎️ IPmodify", url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu.list" },
